@@ -42,8 +42,11 @@ bool PopovaEIntegrMonteCarloSEQ::PreProcessingImpl() {
 
 bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
 
-  std::random_device rd;
-  std::mt19937 generate(rd());
+  // std::random_device rd;
+  // std::mt19937 generate(rd());
+
+  std::mt19937 generate(12345); 
+
   std::uniform_real_distribution<double> dist(a_, b_);
 
   double sum = 0.0;
