@@ -14,35 +14,9 @@ PopovaEIntegrMonteCarloSEQ::PopovaEIntegrMonteCarloSEQ(const InType &in) {
   GetInput() = in;
   GetOutput() = 0;
 
-
-  //rng_ = std::mt19937(std::random_device{}());   // инициализация генератора
-
-  // rng_ = std::mt19937(static_cast<std::uint32_t>(std::get<2>(in)));.
-  // generate = std::mt19937(123456789);  // или любое выбранное число
-
 }
 
 bool PopovaEIntegrMonteCarloSEQ::ValidationImpl() {
-  // const auto& in = GetInput();
-  // double a = std::get<0>(in);
-  // double b = std::get<1>(in);
-  // int n = std::get<2>(in);
-
-
-
-
-
-  // const auto& in = GetInput();
-  // a_ = std::get<0>(in);
-  // b_ = std::get<1>(in);
-  // point_count = std::get<2>(in);
-
-  // if (!(a_ < b_)) return false;
-  // if (point_count <= 0) return false;
-
-  // return true;
-
-
 
 
 
@@ -56,17 +30,7 @@ bool PopovaEIntegrMonteCarloSEQ::ValidationImpl() {
 }
 
 bool PopovaEIntegrMonteCarloSEQ::PreProcessingImpl() {
-  // const auto& in = GetInput();
-  // a_ = std::get<0>(in);
-  // b_ = std::get<1>(in);
-  // point_count = std::get<2>(in);
-
-  // return true;
-
-
-
-
-
+  
   const auto& [a, b, n] = GetInput();
     a_ = a;
     b_ = b;
