@@ -11,6 +11,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include <cmath>
 
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
 #include "popova_e_integr_monte_carlo/mpi/include/ops_mpi.hpp"
@@ -23,28 +24,17 @@ namespace popova_e_integr_monte_carlo {
 class PopovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
   static std::string PrintTestParam(const TestType &test_param) {
-    // return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
+    
+    
+    // std::string a = std::to_string(std::get<0>(std::get<0>(test_param)));
+    // std::string b = std::to_string(std::get<1>(std::get<0>(test_param)));
 
+    // std::replace(a.begin(), a.end(), '.', '_');
+    // std::replace(b.begin(), b.end(), '.', '_');
 
+    // return a + "_" + b + "_" + std::to_string(std::get<2>(std::get<0>(test_param))) + "_" + std::get<1>(test_param);
 
-
-    // return std::to_string(std::get<0>(std::get<0>(test_param))) + "_" +
-    //        std::to_string(std::get<1>(std::get<0>(test_param))) + "_" +
-    //        std::to_string(std::get<2>(std::get<0>(test_param))) + "_" +
-    //        std::get<1>(test_param);
-
-
-
-
-
- std::string a = std::to_string(std::get<0>(std::get<0>(test_param)));
-    std::string b = std::to_string(std::get<1>(std::get<0>(test_param)));
-
-    std::replace(a.begin(), a.end(), '.', '_');
-    std::replace(b.begin(), b.end(), '.', '_');
-
-    return a + "_" + b + "_" + std::to_string(std::get<2>(std::get<0>(test_param))) + "_" + std::get<1>(test_param);
-
+    return std::get<1>(test_param);  // просто название теста, без a, b и n
 
   }
 
@@ -52,20 +42,23 @@ class PopovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, 
   void SetUp() override {
 
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
-    input_data_ = std::get<0>(params);  // tuple (a, b, n)
-
+    input_data_ = std::get<0>(params);  
 
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
     const auto& [a, b, n] = input_data_;
-    double expected = (b*b*b - a*a*a) / 3.0;  // точный интеграл f(x)=x^2
-    double epsilon = 0.05 * expected;         // допустимая погрешность
-    return std::abs(output_data - expected) < epsilon;
 
+    double exp_integral = ((b*b*b*b)/4 - 2*b*b) - ((a*a*a*a)/4 - 2*a*a);
+    // double epsilon = 0.1 * std::max(std::abs(exp_integral), 1e-3);         // допустимая погрешность
+    // return std::abs(output_data - exp_integral) < epsilon;
 
-
-
+     // Эмпирическая погрешность Monte Carlo
+    double avg = exp_integral / (b - a);  // грубая оценка для sigma
+    double std_dev = (b - a) / std::sqrt(n) * std::max(std::abs(avg), 1.0);
+    double epsilon = std::max(3.0 * std_dev, 1e-3);
+    
+    return std::abs(output_data - exp_integral) <= epsilon;
   }
 
   InType GetTestInputData() final {
@@ -87,11 +80,20 @@ TEST_P(PopovaERunFuncTestsProcesses, MatmulFromPic) {
 
 
 
-const std::array<TestType, 3> kTestParam = {
-    std::make_tuple(std::make_tuple(0.0, 1.0, 1000), "test1"),
-    std::make_tuple(std::make_tuple(0.0, 2.0, 1000), "test2"),
-    std::make_tuple(std::make_tuple(1.0, 3.0, 5000), "test3")
-};
+const std::array<TestType, 10> kTestParam = {{
+    std::make_tuple(std::make_tuple(0.0, 1.0, 1000), "test1"),   // оригинальный
+    std::make_tuple(std::make_tuple(0.0, 2.0, 1000), "test2"),   // оригинальный
+    std::make_tuple(std::make_tuple(1.0, 3.0, 5000), "test3"),   // оригинальный
+    std::make_tuple(std::make_tuple(0.0, 1.0, 2000), "test4"),  // отрицательные и положительные
+    std::make_tuple(std::make_tuple(-2.0, -0.5, 1500), "test5"), // полностью отрицательный отрезок
+    std::make_tuple(std::make_tuple(-1.0, 10.0, 8000), "test6"),  
+    std::make_tuple(std::make_tuple(-1.0, 5.0, 45000), "test7"),    
+    std::make_tuple(std::make_tuple(4.5, 5.0, 100), "test8"),
+    std::make_tuple(std::make_tuple(4.5, 5.0, 8000), "test9"),   
+    std::make_tuple(std::make_tuple(-2.0, 5.0, 5), "test10")
+}};
+
+
 
 
 

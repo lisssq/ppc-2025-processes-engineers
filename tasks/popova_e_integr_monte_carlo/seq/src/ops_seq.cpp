@@ -15,7 +15,11 @@ PopovaEIntegrMonteCarloSEQ::PopovaEIntegrMonteCarloSEQ(const InType &in) {
   GetOutput() = 0;
 
 
-  rng_ = std::mt19937(std::random_device{}());   // инициализация генератора
+  //rng_ = std::mt19937(std::random_device{}());   // инициализация генератора
+
+  // rng_ = std::mt19937(static_cast<std::uint32_t>(std::get<2>(in)));.
+  // generate = std::mt19937(123456789);  // или любое выбранное число
+
 }
 
 bool PopovaEIntegrMonteCarloSEQ::ValidationImpl() {
@@ -74,12 +78,15 @@ bool PopovaEIntegrMonteCarloSEQ::PreProcessingImpl() {
 
 bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
 
+  std::random_device rd;
+  std::mt19937 generate(rd());
   std::uniform_real_distribution<double> dist(a_, b_);
+
   double sum = 0.0;
   for (int i = 0; i < point_count; ++i) {
-    double x = dist(rng_);
-    // Пример функции: f(x) = x^2
-    double fx = x * x;
+    double x = dist(generate);
+    // интеграл f(x) = x^3 - 4x
+    double fx = x * x * x - 4 * x;
     sum += fx;
   }
   double avg = sum / static_cast<double>(point_count);

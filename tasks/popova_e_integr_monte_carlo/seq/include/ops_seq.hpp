@@ -26,6 +26,7 @@ class PopovaEIntegrMonteCarloSEQ : public BaseTask {
   double a_{};
   double b_{};
   std::mt19937 rng_;
+
 };
 
 }  // namespace popova_e_integr_monte_carlo
