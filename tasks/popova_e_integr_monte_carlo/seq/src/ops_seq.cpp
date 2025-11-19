@@ -2,6 +2,7 @@
 
 #include <numeric>
 #include <vector>
+#include <random>
 
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
 #include "util/include/util.hpp"
@@ -12,49 +13,86 @@ PopovaEIntegrMonteCarloSEQ::PopovaEIntegrMonteCarloSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = 0;
+
+
+  rng_ = std::mt19937(std::random_device{}());   // инициализация генератора
 }
 
 bool PopovaEIntegrMonteCarloSEQ::ValidationImpl() {
-  return (GetInput() > 0) && (GetOutput() == 0);
+  // const auto& in = GetInput();
+  // double a = std::get<0>(in);
+  // double b = std::get<1>(in);
+  // int n = std::get<2>(in);
+
+
+
+
+
+  // const auto& in = GetInput();
+  // a_ = std::get<0>(in);
+  // b_ = std::get<1>(in);
+  // point_count = std::get<2>(in);
+
+  // if (!(a_ < b_)) return false;
+  // if (point_count <= 0) return false;
+
+  // return true;
+
+
+
+
+
+  const auto& [a, b, n] = GetInput();  // структурированное связывание
+    a_ = a;
+    b_ = b;
+    point_count = n;
+
+    return (a_ < b_) && (point_count > 0);
+
 }
 
 bool PopovaEIntegrMonteCarloSEQ::PreProcessingImpl() {
-  GetOutput() = 2 * GetInput();
-  return GetOutput() > 0;
+  // const auto& in = GetInput();
+  // a_ = std::get<0>(in);
+  // b_ = std::get<1>(in);
+  // point_count = std::get<2>(in);
+
+  // return true;
+
+
+
+
+
+  const auto& [a, b, n] = GetInput();
+    a_ = a;
+    b_ = b;
+    point_count = n;
+
+    return true;
+
 }
 
 bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
-  if (GetInput() == 0) {
-    return false;
-  }
 
-  for (InType i = 0; i < GetInput(); i++) {
-    for (InType j = 0; j < GetInput(); j++) {
-      for (InType k = 0; k < GetInput(); k++) {
-        std::vector<InType> tmp(i + j + k, 1);
-        GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
-        GetOutput() -= i + j + k;
-      }
-    }
+  std::uniform_real_distribution<double> dist(a_, b_);
+  double sum = 0.0;
+  for (int i = 0; i < point_count; ++i) {
+    double x = dist(rng_);
+    // Пример функции: f(x) = x^2
+    double fx = x * x;
+    sum += fx;
   }
+  double avg = sum / static_cast<double>(point_count);
+  double integral = (b_ - a_) * avg;
 
-  const int num_threads = ppc::util::GetNumThreads();
-  GetOutput() *= num_threads;
+  GetOutput() = integral;
 
-  int counter = 0;
-  for (int i = 0; i < num_threads; i++) {
-    counter++;
-  }
+  return true;
 
-  if (counter != 0) {
-    GetOutput() /= counter;
-  }
-  return GetOutput() > 0;
 }
 
 bool PopovaEIntegrMonteCarloSEQ::PostProcessingImpl() {
-  GetOutput() -= GetInput();
-  return GetOutput() > 0;
+  return true;
 }
 
 }  // namespace popova_e_integr_monte_carlo

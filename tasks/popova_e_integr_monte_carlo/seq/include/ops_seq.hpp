@@ -3,6 +3,9 @@
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
 #include "task/include/task.hpp"
 
+#include <random>
+
+
 namespace popova_e_integr_monte_carlo {
 
 class PopovaEIntegrMonteCarloSEQ : public BaseTask {
@@ -17,6 +20,12 @@ class PopovaEIntegrMonteCarloSEQ : public BaseTask {
   bool PreProcessingImpl() override;
   bool RunImpl() override;
   bool PostProcessingImpl() override;
+
+
+  int point_count{};
+  double a_{};
+  double b_{};
+  std::mt19937 rng_;
 };
 
 }  // namespace popova_e_integr_monte_carlo

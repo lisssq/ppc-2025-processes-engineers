@@ -23,37 +23,49 @@ namespace popova_e_integr_monte_carlo {
 class PopovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
   static std::string PrintTestParam(const TestType &test_param) {
-    return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
+    // return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
+
+
+
+
+    // return std::to_string(std::get<0>(std::get<0>(test_param))) + "_" +
+    //        std::to_string(std::get<1>(std::get<0>(test_param))) + "_" +
+    //        std::to_string(std::get<2>(std::get<0>(test_param))) + "_" +
+    //        std::get<1>(test_param);
+
+
+
+
+
+ std::string a = std::to_string(std::get<0>(std::get<0>(test_param)));
+    std::string b = std::to_string(std::get<1>(std::get<0>(test_param)));
+
+    std::replace(a.begin(), a.end(), '.', '_');
+    std::replace(b.begin(), b.end(), '.', '_');
+
+    return a + "_" + b + "_" + std::to_string(std::get<2>(std::get<0>(test_param))) + "_" + std::get<1>(test_param);
+
+
   }
 
  protected:
   void SetUp() override {
-    int width = -1;
-    int height = -1;
-    int channels = -1;
-    std::vector<uint8_t> img; 
-    // Read image
-    {
-      std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_popova_e_integr_monte_carlo, "pic.jpg");
-      auto *data = stbi_load(abs_path.c_str(), &width, &height, &channels, 0);
-      if (data == nullptr) {
-        throw std::runtime_error("Failed to load image: " + std::string(stbi_failure_reason()));
-      }
-      img = std::vector<uint8_t>(data, data + (static_cast<ptrdiff_t>(width * height * channels)));
-      stbi_image_free(data);
-      
-      //if (std::cmp_not_equal(width, height)) {
-      if (width != height) {
-        throw std::runtime_error("width != height: ");
-      }
-    }
 
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
-    input_data_ = width - height + std::min(std::accumulate(img.begin(), img.end(), 0), channels);
+    input_data_ = std::get<0>(params);  // tuple (a, b, n)
+
+
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    return (input_data_ == output_data);
+    const auto& [a, b, n] = input_data_;
+    double expected = (b*b*b - a*a*a) / 3.0;  // точный интеграл f(x)=x^2
+    double epsilon = 0.05 * expected;         // допустимая погрешность
+    return std::abs(output_data - expected) < epsilon;
+
+
+
+
   }
 
   InType GetTestInputData() final {
@@ -61,7 +73,7 @@ class PopovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, 
   }
 
  private:
-  InType input_data_ = 0;
+  InType input_data_;
 };
 
 namespace {
@@ -70,17 +82,40 @@ TEST_P(PopovaERunFuncTestsProcesses, MatmulFromPic) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 3> kTestParam = {std::make_tuple(3, "3"), std::make_tuple(5, "5"), std::make_tuple(7, "7")};
+
+
+
+
+
+const std::array<TestType, 3> kTestParam = {
+    std::make_tuple(std::make_tuple(0.0, 1.0, 1000), "test1"),
+    std::make_tuple(std::make_tuple(0.0, 2.0, 1000), "test2"),
+    std::make_tuple(std::make_tuple(1.0, 3.0, 5000), "test3")
+};
+
+
+
+
+
+
+// const auto kTestTasksList =
+//     std::tuple_cat(ppc::util::AddFuncTask<PopovaEIntegrMonteCarloMPI, InType>(kTestParam, PPC_SETTINGS_popova_e_integr_monte_carlo),
+//                    ppc::util::AddFuncTask<PopovaEIntegrMonteCarloSEQ, InType>(kTestParam, PPC_SETTINGS_popova_e_integr_monte_carlo));
+
+
 
 const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<PopovaEIntegrMonteCarloMPI, InType>(kTestParam, PPC_SETTINGS_popova_e_integr_monte_carlo),
-                   ppc::util::AddFuncTask<PopovaEIntegrMonteCarloSEQ, InType>(kTestParam, PPC_SETTINGS_popova_e_integr_monte_carlo));
+    std::tuple_cat(
+        ppc::util::AddFuncTask<PopovaEIntegrMonteCarloSEQ, InType>(kTestParam, PPC_SETTINGS_popova_e_integr_monte_carlo)
+    );
+
+
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
 const auto kPerfTestName = PopovaERunFuncTestsProcesses::PrintFuncTestName<PopovaERunFuncTestsProcesses>;
 
-INSTANTIATE_TEST_SUITE_P(PicMatrixTests, PopovaERunFuncTestsProcesses, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(MonteCarloTests, PopovaERunFuncTestsProcesses, kGtestValues, kPerfTestName);
 
 }  // namespace
 
