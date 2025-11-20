@@ -18,7 +18,7 @@ PopovaEIntegrMonteCarloMPI::PopovaEIntegrMonteCarloMPI(const InType &in) {
 }
 
 bool PopovaEIntegrMonteCarloMPI::ValidationImpl() {
-  const auto& [a, b, n] = GetInput();
+  const auto &[a, b, n] = GetInput();
   a_ = a;
   b_ = b;
   point_count = n;
@@ -27,7 +27,7 @@ bool PopovaEIntegrMonteCarloMPI::ValidationImpl() {
 }
 
 bool PopovaEIntegrMonteCarloMPI::PreProcessingImpl() {
-  const auto& [a, b, n] = GetInput();
+  const auto &[a, b, n] = GetInput();
   a_ = a;
   b_ = b;
   point_count = n;
@@ -43,7 +43,7 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
 
   int local_point_count = point_count / size;
   int extra_points = point_count % size;
-  
+
   if (rank < extra_points) {
     local_point_count++;
   }
@@ -65,14 +65,13 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
   double integral = 0.0;
   if (rank == 0) {
     double sredn = total_sum / static_cast<double>(point_count);
-    
+
     integral = (b_ - a_) * sredn;
   }
 
   MPI_Bcast(&integral, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  
-  GetOutput() = integral; 
 
+  GetOutput() = integral;
 
   return true;
 }

@@ -1,8 +1,8 @@
 #include "popova_e_integr_monte_carlo/seq/include/ops_seq.hpp"
 
 #include <numeric>
-#include <vector>
 #include <random>
+#include <vector>
 
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
 #include "util/include/util.hpp"
@@ -13,32 +13,28 @@ PopovaEIntegrMonteCarloSEQ::PopovaEIntegrMonteCarloSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = 0;
-
 }
 
 bool PopovaEIntegrMonteCarloSEQ::ValidationImpl() {
+  const auto &[a, b, n] = GetInput();
+  a_ = a;
+  b_ = b;
+  point_count = n;
 
-  const auto& [a, b, n] = GetInput();  
-    a_ = a;
-    b_ = b;
-    point_count = n;
-
-    return (a_ < b_) && (point_count > 0);
+  return (a_ < b_) && (point_count > 0);
 }
 
 bool PopovaEIntegrMonteCarloSEQ::PreProcessingImpl() {
-  
-  const auto& [a, b, n] = GetInput();
-    a_ = a;
-    b_ = b;
-    point_count = n;
+  const auto &[a, b, n] = GetInput();
+  a_ = a;
+  b_ = b;
+  point_count = n;
 
-    return true;
+  return true;
 }
 
 bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
-
-  std::mt19937 generate(12345); 
+  std::mt19937 generate(12345);
   std::uniform_real_distribution<double> dist(a_, b_);
 
   double sum = 0.0;
@@ -54,7 +50,6 @@ bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
   GetOutput() = integral;
 
   return true;
-
 }
 
 bool PopovaEIntegrMonteCarloSEQ::PostProcessingImpl() {
