@@ -25,7 +25,6 @@ class PopovaEIntegrMonteCarloSEQ : public BaseTask {
   int point_count{};
   double a_{};
   double b_{};
-  std::mt19937 rng_;
 
 };
 

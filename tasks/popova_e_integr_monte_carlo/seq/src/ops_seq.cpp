@@ -18,15 +18,12 @@ PopovaEIntegrMonteCarloSEQ::PopovaEIntegrMonteCarloSEQ(const InType &in) {
 
 bool PopovaEIntegrMonteCarloSEQ::ValidationImpl() {
 
-
-
-  const auto& [a, b, n] = GetInput();  // структурированное связывание
+  const auto& [a, b, n] = GetInput();  
     a_ = a;
     b_ = b;
     point_count = n;
 
     return (a_ < b_) && (point_count > 0);
-
 }
 
 bool PopovaEIntegrMonteCarloSEQ::PreProcessingImpl() {
@@ -37,16 +34,11 @@ bool PopovaEIntegrMonteCarloSEQ::PreProcessingImpl() {
     point_count = n;
 
     return true;
-
 }
 
 bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
 
-  // std::random_device rd;
-  // std::mt19937 generate(rd());
-
   std::mt19937 generate(12345); 
-
   std::uniform_real_distribution<double> dist(a_, b_);
 
   double sum = 0.0;
@@ -56,8 +48,8 @@ bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
     double fx = x * x * x - 4 * x;
     sum += fx;
   }
-  double avg = sum / static_cast<double>(point_count);
-  double integral = (b_ - a_) * avg;
+  double sredn = sum / static_cast<double>(point_count);
+  double integral = (b_ - a_) * sredn;
 
   GetOutput() = integral;
 

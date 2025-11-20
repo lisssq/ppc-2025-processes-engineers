@@ -2,7 +2,7 @@
 #include <cmath>
 
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
-// #include "popova_e_integr_monte_carlo/mpi/include/ops_mpi.hpp"
+#include "popova_e_integr_monte_carlo/mpi/include/ops_mpi.hpp"
 #include "popova_e_integr_monte_carlo/seq/include/ops_seq.hpp"
 #include "util/include/perf_test_util.hpp"
 
@@ -21,9 +21,8 @@ class PopovaEIntegrMonteCarloRunPerfTestProcesses : public ppc::util::BaseRunPer
     
     double exp_integral = ((b*b*b*b)/4 - 2*b*b) - ((a*a*a*a)/4 - 2*a*a);
     
-    // Эмпирическая погрешность Monte Carlo
-    double avg = exp_integral / (b - a);
-    double std_dev = (b - a) / std::sqrt(n) * std::max(std::abs(avg), 1.0);
+    double sredn = exp_integral / (b - a);
+    double std_dev = (b - a) / std::sqrt(n) * std::max(std::abs(sredn), 1.0);
     double epsilon = std::max(3.0 * std_dev, 1e-3);
     
     return std::abs(output_data - exp_integral) <= epsilon;
@@ -40,13 +39,7 @@ TEST_P(PopovaEIntegrMonteCarloRunPerfTestProcesses, RunPerfModes) {
 
 
 const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, PopovaEIntegrMonteCarloSEQ>(PPC_SETTINGS_popova_e_integr_monte_carlo);
-
-
-// когда MPI будет готов, раскомментировать
-
-// const auto kAllPerfTasks =
-//     ppc::util::MakeAllPerfTasks<InType, PopovaEIntegrMonteCarloMPI, PopovaEIntegrMonteCarloSEQ>(PPC_SETTINGS_popova_e_integr_monte_carlo);
+    ppc::util::MakeAllPerfTasks<InType, PopovaEIntegrMonteCarloMPI, PopovaEIntegrMonteCarloSEQ>(PPC_SETTINGS_popova_e_integr_monte_carlo);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 

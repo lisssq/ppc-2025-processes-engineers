@@ -1,72 +1,84 @@
-// #include "popova_e_integr_monte_carlo/mpi/include/ops_mpi.hpp"
+#include "popova_e_integr_monte_carlo/mpi/include/ops_mpi.hpp"
 
-// #include <mpi.h>
+#include <mpi.h>
 
-// #include <numeric>
-// #include <vector>
+#include <numeric>
+#include <random>
+#include <vector>
 
-// #include "popova_e_integr_monte_carlo/common/include/common.hpp"
-// #include "util/include/util.hpp"
+#include "popova_e_integr_monte_carlo/common/include/common.hpp"
+#include "util/include/util.hpp"
 
-// namespace popova_e_integr_monte_carlo {
+namespace popova_e_integr_monte_carlo {
 
-// PopovaEIntegrMonteCarloMPI::PopovaEIntegrMonteCarloMPI(const InType &in) {
-//   SetTypeOfTask(GetStaticTypeOfTask());
-//   GetInput() = in;
-//   GetOutput() = 0;
-// }
+PopovaEIntegrMonteCarloMPI::PopovaEIntegrMonteCarloMPI(const InType &in) {
+  SetTypeOfTask(GetStaticTypeOfTask());
+  GetInput() = in;
+  GetOutput() = 0;
+}
 
-// bool PopovaEIntegrMonteCarloMPI::ValidationImpl() {
-//   return (GetInput() > 0) && (GetOutput() == 0);
-// }
+bool PopovaEIntegrMonteCarloMPI::ValidationImpl() {
+  const auto& [a, b, n] = GetInput();
+  a_ = a;
+  b_ = b;
+  point_count = n;
 
-// bool PopovaEIntegrMonteCarloMPI::PreProcessingImpl() {
-//   GetOutput() = 2 * GetInput();
-//   return GetOutput() > 0;
-// }
+  return (a_ < b_) && (point_count > 0);
+}
 
-// bool PopovaEIntegrMonteCarloMPI::RunImpl() {
-//   auto input = GetInput();
-//   if (input == 0) {
-//     return false;
-//   }
+bool PopovaEIntegrMonteCarloMPI::PreProcessingImpl() {
+  const auto& [a, b, n] = GetInput();
+  a_ = a;
+  b_ = b;
+  point_count = n;
 
-//   for (InType i = 0; i < GetInput(); i++) {
-//     for (InType j = 0; j < GetInput(); j++) {
-//       for (InType k = 0; k < GetInput(); k++) {
-//         std::vector<InType> tmp(i + j + k, 1);
-//         GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
-//         GetOutput() -= i + j + k;
-//       }
-//     }
-//   }
+  return true;
+}
 
-//   const int num_threads = ppc::util::GetNumThreads();
-//   GetOutput() *= num_threads;
+bool PopovaEIntegrMonteCarloMPI::RunImpl() {
+  int rank = 0;
+  int size = 0;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-//   int rank = 0;
-//   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int local_point_count = point_count / size;
+  int extra_points = point_count % size;
+  
+  if (rank < extra_points) {
+    local_point_count++;
+  }
 
-//   if (rank == 0) {
-//     GetOutput() /= num_threads;
-//   } else {
-//     int counter = 0;
-//     for (int i = 0; i < num_threads; i++) {
-//       counter++;
-//     }
+  std::mt19937 generate_(12345 + rank);
+  std::uniform_real_distribution<double> dist(a_, b_);
 
-//     if (counter != 0) {
-//       GetOutput() /= counter;
-//     }
-//   }
+  double local_sum = 0.0;
+  for (int i = 0; i < local_point_count; ++i) {
+    double x = dist(generate_);
+    // интеграл f(x) = x^3 - 4x
+    double fx = x * x * x - 4 * x;
+    local_sum += fx;
+  }
 
-//   MPI_Barrier(MPI_COMM_WORLD);
-//   return GetOutput() > 0;
-// }
+  double total_sum = 0.0;
+  MPI_Reduce(&local_sum, &total_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-// bool PopovaEIntegrMonteCarloMPI::PostProcessingImpl() {
-//   GetOutput() -= GetInput();
-//   return GetOutput() > 0;
-// }
+  double integral = 0.0;
+  if (rank == 0) {
+    double sredn = total_sum / static_cast<double>(point_count);
+    
+    integral = (b_ - a_) * sredn;
+  }
 
-// }  // namespace popova_e_integr_monte_carlo
+  MPI_Bcast(&integral, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  
+  GetOutput() = integral; 
+
+
+  return true;
+}
+
+bool PopovaEIntegrMonteCarloMPI::PostProcessingImpl() {
+  return true;
+}
+
+}  // namespace popova_e_integr_monte_carlo
