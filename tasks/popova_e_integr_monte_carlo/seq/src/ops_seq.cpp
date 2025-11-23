@@ -19,7 +19,6 @@ bool PopovaEIntegrMonteCarloSEQ::ValidationImpl() {
 
   // return (a_ < b_) && (point_count > 0);
 
-
   const auto &[a, b, n] = GetInput();
   return (a < b) && (n > 0);
 }

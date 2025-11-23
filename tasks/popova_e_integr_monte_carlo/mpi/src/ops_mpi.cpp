@@ -25,7 +25,6 @@ bool PopovaEIntegrMonteCarloMPI::ValidationImpl() {
 
   // return (a_ < b_) && (point_count > 0);
 
-
   const auto &[a, b, n] = GetInput();
   return (a < b) && (n > 0);
 }
@@ -65,13 +64,12 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
     local_sum += fx;
   }
 
-
-    // double local_sum = 0.0;
-    // for (int i = local_start; i < local_end; ++i) {
-    //     double x = dist(generate_); // генерация точки
-    //     double fx = x * x * x - 4 * x; // f(x) = x^3 - 4x
-    //     local_sum += fx;
-    // }
+  // double local_sum = 0.0;
+  // for (int i = local_start; i < local_end; ++i) {
+  //     double x = dist(generate_); // генерация точки
+  //     double fx = x * x * x - 4 * x; // f(x) = x^3 - 4x
+  //     local_sum += fx;
+  // }
 
   double total_sum = 0.0;
   MPI_Reduce(&local_sum, &total_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
