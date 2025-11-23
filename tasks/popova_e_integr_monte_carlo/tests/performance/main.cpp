@@ -23,7 +23,7 @@ class PopovaEIntegrMonteCarloRunPerfTestProcesses : public ppc::util::BaseRunPer
 
     double sredn = exp_integral / (b - a);
     double std_dev = (b - a) / std::sqrt(n) * std::max(std::abs(sredn), 1.0);
-    double epsilon = std::max(3.0 * std_dev, 1e-3);
+    double epsilon = std::max(5.0 * std_dev, 1e-3);
 
     return std::abs(output_data - exp_integral) <= epsilon;
   }

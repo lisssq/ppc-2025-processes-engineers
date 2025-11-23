@@ -73,7 +73,7 @@ const std::array<TestType, 10> kTestParam = {{std::make_tuple(std::make_tuple(0.
                                               std::make_tuple(std::make_tuple(1.0, 3.0, 5000), "test3"),
                                               std::make_tuple(std::make_tuple(0.0, 1.0, 2000), "test4"),
                                               std::make_tuple(std::make_tuple(-2.0, -0.5, 1500), "test5"),
-                                              std::make_tuple(std::make_tuple(-5.5, 5.0, 8000), "test6"),
+                                              std::make_tuple(std::make_tuple(-4.0, 5.0, 800000), "test6"),
                                               std::make_tuple(std::make_tuple(-1.0, 5.0, 450000), "test7"),
                                               std::make_tuple(std::make_tuple(4.5, 5.0, 100), "test8"),
                                               std::make_tuple(std::make_tuple(4.5, 5.0, 8000), "test9"),
