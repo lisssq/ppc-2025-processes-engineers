@@ -12,13 +12,6 @@ PopovaEIntegrMonteCarloSEQ::PopovaEIntegrMonteCarloSEQ(const InType &in) {
 }
 
 bool PopovaEIntegrMonteCarloSEQ::ValidationImpl() {
-  // const auto &[a, b, n] = GetInput();
-  // a_ = a;
-  // b_ = b;
-  // point_count = n;
-
-  // return (a_ < b_) && (point_count > 0);
-
   const auto &[a, b, n] = GetInput();
   return (a < b) && (n > 0);
 }

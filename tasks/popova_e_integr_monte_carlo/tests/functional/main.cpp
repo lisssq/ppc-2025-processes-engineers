@@ -37,7 +37,6 @@ class PopovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, 
     const auto &[a, b, n] = input_data_;
 
 #ifdef BUILD_MPI
-
     int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (rank != 0) {
