@@ -1,7 +1,5 @@
 #pragma once
 
-#include <random>
-
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
 #include "task/include/task.hpp"
 
@@ -20,7 +18,7 @@ class PopovaEIntegrMonteCarloSEQ : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  int point_count{};
+  int point_count_{};
   double a_{};
   double b_{};
 };

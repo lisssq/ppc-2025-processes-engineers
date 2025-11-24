@@ -51,12 +51,12 @@ using OutType = double;
   std::uniform_real_distribution<double> dist(a_, b_);
 
   double sum = 0.0;
-  for (int i = 0; i < point_count; ++i) {
+  for (int i = 0; i < point_count_; ++i) {
     double x = dist(generate);
-    double fx = x * x * x - 4 * x;
+    double fx = (x * x * x) - (4 * x);
     sum += fx;
   }
-  double sredn = sum / static_cast<double>(point_count);
+  double sredn = sum / static_cast<double>(point_count_);
   double integral = (b_ - a_) * sredn;
 ```
 ## 4. Схема распараллеливания

@@ -5,13 +5,8 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <cstdint>
-#include <numeric>
-#include <stdexcept>
 #include <string>
 #include <tuple>
-#include <utility>
-#include <vector>
 
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
 #include "popova_e_integr_monte_carlo/mpi/include/ops_mpi.hpp"

@@ -2,9 +2,7 @@
 
 #include <mpi.h>
 
-#include <numeric>
 #include <random>
-#include <vector>
 
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
 #include "util/include/util.hpp"
@@ -26,7 +24,7 @@ bool PopovaEIntegrMonteCarloMPI::PreProcessingImpl() {
   const auto &[a, b, n] = GetInput();
   a_ = a;
   b_ = b;
-  point_count = n;
+  point_count_= n;
 
   return true;
 }
@@ -37,21 +35,21 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  int local_point_count = point_count / size;
-  int extra_points = point_count % size;
+  int local_point_count = point_count_ / size;
+  int extra_points = point_count_ % size;
 
   if (rank < extra_points) {
     local_point_count++;
   }
 
-  std::mt19937 generate_(12345 + rank);
+  std::mt19937 generate(12345 + rank);
   std::uniform_real_distribution<double> dist(a_, b_);
 
   double local_sum = 0.0;
   for (int i = 0; i < local_point_count; ++i) {
-    double x = dist(generate_);
+    double x = dist(generate);
     // интеграл f(x) = x^3 - 4x
-    double fx = x * x * x - 4 * x;
+    double fx = (x * x * x) - (4 * x);
     local_sum += fx;
   }
 
@@ -60,7 +58,7 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
 
   double integral = 0.0;
   if (rank == 0) {
-    double sredn = total_sum / static_cast<double>(point_count);
+    double sredn = total_sum / static_cast<double>(point_count_);
 
     integral = (b_ - a_) * sredn;
   }

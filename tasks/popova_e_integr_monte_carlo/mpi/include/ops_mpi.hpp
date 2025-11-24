@@ -18,7 +18,7 @@ class PopovaEIntegrMonteCarloMPI : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  int point_count{};
+  int point_count_{};
   double a_{};
   double b_{};
 };
