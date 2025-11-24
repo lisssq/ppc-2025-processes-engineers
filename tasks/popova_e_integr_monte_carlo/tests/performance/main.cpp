@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <cmath>
+#include <tuple>
 
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
 #include "popova_e_integr_monte_carlo/mpi/include/ops_mpi.hpp"
@@ -10,7 +12,7 @@
 namespace popova_e_integr_monte_carlo {
 
 class PopovaEIntegrMonteCarloRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  InType input_data_{};
+  InType input_data_;
 
   void SetUp() override {
     input_data_ = std::make_tuple(0.0, 2.0, 1000000);
