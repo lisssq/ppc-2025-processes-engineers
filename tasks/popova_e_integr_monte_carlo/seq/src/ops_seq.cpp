@@ -28,11 +28,7 @@ bool PopovaEIntegrMonteCarloSEQ::PreProcessingImpl() {
 }
 
 bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
-  // std::mt19937 generate(12345);
-
-  std::random_device rd;
-  std::mt19937 generate(rd());
-
+  std::mt19937 generate(12345);  // NOLINT(cert-msc51-cpp)
   std::uniform_real_distribution<double> dist(a_, b_);
 
   double sum = 0.0;

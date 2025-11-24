@@ -41,11 +41,7 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
     local_point_count++;
   }
 
-  // std::mt19937 generate(12345 + rank);
-
-  std::random_device rd;
-  std::mt19937 generate(rd() + rank);
-
+  std::mt19937 generate(12345 + rank);  // NOLINT(cert-msc51-cpp)
   std::uniform_real_distribution<double> dist(a_, b_);
 
   double local_sum = 0.0;
