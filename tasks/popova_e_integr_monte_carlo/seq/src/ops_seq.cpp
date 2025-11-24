@@ -1,10 +1,10 @@
 #include "popova_e_integr_monte_carlo/seq/include/ops_seq.hpp"
 
+#include <cmath>
+#include <random>
+
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
 #include "util/include/util.hpp"
-
-#include <random>
-#include <cmath>
 
 namespace popova_e_integr_monte_carlo {
 

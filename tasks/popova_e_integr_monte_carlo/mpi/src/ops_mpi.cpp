@@ -24,7 +24,7 @@ bool PopovaEIntegrMonteCarloMPI::PreProcessingImpl() {
   const auto &[a, b, n] = GetInput();
   a_ = a;
   b_ = b;
-  point_count_= n;
+  point_count_ = n;
 
   return true;
 }
