@@ -5,7 +5,6 @@
 #include <random>
 
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace popova_e_integr_monte_carlo {
 
@@ -42,7 +41,11 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
     local_point_count++;
   }
 
-  std::mt19937 generate(12345 + rank);
+  // std::mt19937 generate(12345 + rank);
+
+  std::random_device rd;
+  std::mt19937 generate(rd() + rank);
+
   std::uniform_real_distribution<double> dist(a_, b_);
 
   double local_sum = 0.0;

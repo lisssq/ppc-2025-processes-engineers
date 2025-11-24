@@ -4,7 +4,6 @@
 #include <random>
 
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace popova_e_integr_monte_carlo {
 
@@ -29,7 +28,11 @@ bool PopovaEIntegrMonteCarloSEQ::PreProcessingImpl() {
 }
 
 bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
-  std::mt19937 generate(12345);
+  // std::mt19937 generate(12345);
+
+  std::random_device rd;
+  std::mt19937 generate(rd());
+
   std::uniform_real_distribution<double> dist(a_, b_);
 
   double sum = 0.0;
