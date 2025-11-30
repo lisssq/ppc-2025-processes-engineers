@@ -41,20 +41,15 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
     local_point_count++;
   }
 
-  // std::mt19937 generate(12345 + rank);  // NOLINT(cert-msc51-cpp)
-  std::random_device rd;
-  std::mt19937 generate(rd());
-  std::uniform_real_distribution<double> dist(a_, b_);
+  // псевдослучайная последовательность
+  const double magic_constant = 0.75487766624669276;
+  double current = 0.1 + 0.8 * rank / size;
 
   double local_sum = 0.0;
   for (int i = 0; i < local_point_count; ++i) {
-    //  int global_index = rank * (point_count_ / size) + std::min(rank, extra_points) + i;
-    // // Генерация x на основе индекса (детерминированно)
-    // double t = static_cast<double>(global_index) / point_count_;
-    // double x = a_ + (b_ - a_) * t;
+    current = std::fmod(current + magic_constant, 1.0);
+    double x = a_ + (b_ - a_) * current;
 
-    double x = dist(generate);
-    // интеграл f(x) = x^3 - 4x
     double fx = (x * x * x) - (4 * x);
     local_sum += fx;
   }
@@ -65,7 +60,6 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
   double integral = 0.0;
   if (rank == 0) {
     double sredn = total_sum / static_cast<double>(point_count_);
-
     integral = (b_ - a_) * sredn;
   }
 
