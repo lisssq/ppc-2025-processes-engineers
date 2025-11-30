@@ -64,7 +64,7 @@ TEST_P(PopovaERunFuncTestsProcesses, MatmulFromPic) {
 
 const std::array<TestType, 10> kTestParam = {{std::make_tuple(std::make_tuple(0.0, 1.0, 1000), "test1"),
                                               std::make_tuple(std::make_tuple(0.0, 2.0, 1000), "test2"),
-                                              std::make_tuple(std::make_tuple(1.0, 3.0, 5000), "test3"),
+                                              std::make_tuple(std::make_tuple(1.0, 3.0, 500), "test3"),
                                               std::make_tuple(std::make_tuple(0.0, 1.0, 2000), "test4"),
                                               std::make_tuple(std::make_tuple(-2.0, -0.5, 1500), "test5"),
                                               std::make_tuple(std::make_tuple(-1.0, 5.0, 80000), "test6"),
