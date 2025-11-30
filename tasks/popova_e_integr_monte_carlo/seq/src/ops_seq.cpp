@@ -28,9 +28,9 @@ bool PopovaEIntegrMonteCarloSEQ::PreProcessingImpl() {
 }
 
 bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
-  //std::mt19937 generate(12345);  // NOLINT(cert-msc51-cpp)
+  // std::mt19937 generate(12345);  // NOLINT(cert-msc51-cpp)
   std::random_device rd;
-  std::mt19937 generate(rd()); 
+  std::mt19937 generate(rd());
   std::uniform_real_distribution<double> dist(a_, b_);
 
   double sum = 0.0;
@@ -40,7 +40,6 @@ bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
     //  // Детерминированная генерация точек
     // double t = static_cast<double>(i) / point_count_;
     // double x = a_ + (b_ - a_) * t;
-
 
     // интеграл f(x) = x^3 - 4x
     double fx = (x * x * x) - (4 * x);
