@@ -31,14 +31,6 @@ class PopovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, 
   bool CheckTestOutputData(OutType &output_data) final {
     const auto &[a, b, n] = input_data_;
 
-#ifdef BUILD_MPI
-    int rank = 0;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    if (rank != 0) {
-      return true;
-    }
-#endif
-
     double exp_integral = ((b * b * b * b) / 4 - 2 * b * b) - ((a * a * a * a) / 4 - 2 * a * a);
 
     double sredn = exp_integral / (b - a);

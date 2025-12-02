@@ -34,21 +34,44 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  int local_point_count = point_count_ / size;
+  std::vector<int> points_per_process(size);
+  std::vector<int> displacements(size);
+
+  int base_point_count = point_count_ / size;
   int extra_points = point_count_ % size;
 
-  if (rank < extra_points) {
-    local_point_count++;
+  int curr_start_index = 0;
+  for (int i = 0; i < size; ++i) {
+    if (i < extra_points) {
+      points_per_process[i] = base_point_count + 1;
+    } else {
+      points_per_process[i] = base_point_count;
+    }
+
+    displacements[i] = curr_start_index;
+    curr_start_index += points_per_process[i];
   }
 
-  // псевдослучайная последовательность
-  const double magic_constant = 0.75487766624669276;
-  double current = 0.1 + 0.8 * rank / size;
+  int local_points_to_process = points_per_process[rank];
+
+  std::vector<double> all_seeds;
+  if (rank == 0) {
+    all_seeds.resize(point_count_);
+    for (int i = 0; i < point_count_; ++i) {
+      all_seeds[i] = static_cast<double>(i);
+    }
+  }
+
+  std::vector<double> local_seeds(local_points_to_process);
+  MPI_Scatterv(all_seeds.data(), points_per_process.data(), displacements.data(), MPI_DOUBLE, local_seeds.data(),
+               local_points_to_process, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
   double local_sum = 0.0;
-  for (int i = 0; i < local_point_count; ++i) {
-    current = std::fmod(current + magic_constant, 1.0);
-    double x = a_ + (b_ - a_) * current;
+  const double magic_constant = 0.75487766624669276;
+
+  for (int i = 0; i < local_points_to_process; ++i) {
+    double t = std::fmod(local_seeds[i] * magic_constant, 1.0);
+    double x = a_ + (b_ - a_) * t;
 
     double fx = (x * x * x) - (4 * x);
     local_sum += fx;
@@ -59,8 +82,8 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
 
   double integral = 0.0;
   if (rank == 0) {
-    double sredn = total_sum / static_cast<double>(point_count_);
-    integral = (b_ - a_) * sredn;
+    double average = total_sum / static_cast<double>(point_count_);
+    integral = (b_ - a_) * average;
   }
 
   MPI_Bcast(&integral, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
