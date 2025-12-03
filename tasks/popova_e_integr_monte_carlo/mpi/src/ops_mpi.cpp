@@ -15,15 +15,16 @@ PopovaEIntegrMonteCarloMPI::PopovaEIntegrMonteCarloMPI(const InType &in) {
 }
 
 bool PopovaEIntegrMonteCarloMPI::ValidationImpl() {
-  const auto &[a, b, n] = GetInput();
-  return (a < b) && (n > 0);
+  const auto &[a, b, n, func_id] = GetInput();
+  return (a < b) && (n > 0) && (func_id >= 0) && (func_id <= 4);
 }
 
 bool PopovaEIntegrMonteCarloMPI::PreProcessingImpl() {
-  const auto &[a, b, n] = GetInput();
+  const auto &[a, b, n, func_id] = GetInput();
   a_ = a;
   b_ = b;
   point_count_ = n;
+  func_id_ = func_id;
 
   return true;
 }
@@ -73,7 +74,26 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
     double t = std::fmod(local_seeds[i] * magic_constant, 1.0);
     double x = a_ + (b_ - a_) * t;
 
-    double fx = (x * x * x) - (4 * x);
+    // double fx = (x * x * x) - (4 * x);
+    double fx = 0.0;
+    switch (func_id_) {
+      case linear_func:
+        fx = (2 * x) + 7;
+        break;
+      case quadratic_func:
+        fx = (5 * x) - (3 * x * x) + 7;
+        break;
+      case cubic_func:
+        fx = (x * x * x) - (4 * x);
+        break;
+      case cos_func:
+        fx = std::cos(2 * x);
+        break;
+      case exp_func:
+        fx = (2 * x) * (std::exp(-2 * x)) + 4;
+        break;
+    }
+
     local_sum += fx;
   }
 
