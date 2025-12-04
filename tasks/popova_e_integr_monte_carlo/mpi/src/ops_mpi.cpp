@@ -76,23 +76,24 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
 
     // double fx = (x * x * x) - (4 * x);
     double fx = 0.0;
-    switch (func_id_) {
-      case linear_func:
-        fx = (2 * x) + 7;
-        break;
-      case quadratic_func:
-        fx = (5 * x) - (3 * x * x) + 7;
-        break;
-      case cubic_func:
-        fx = (x * x * x) - (4 * x);
-        break;
-      case cos_func:
-        fx = std::cos(2 * x);
-        break;
-      case exp_func:
-        fx = (2 * x) * (std::exp(-2 * x)) + 4;
-        break;
-    }
+    fx = FunctionPair::function(func_id_, x);
+    // switch (func_id_) {
+    //   case linear_func:
+    //     fx = (2 * x) + 7;
+    //     break;
+    //   case quadratic_func:
+    //     fx = (5 * x) - (3 * x * x) + 7;
+    //     break;
+    //   case cubic_func:
+    //     fx = (x * x * x) - (4 * x);
+    //     break;
+    //   case cos_func:
+    //     fx = std::cos(2 * x);
+    //     break;
+    //   case exp_func:
+    //     fx = (2 * x) * (std::exp(-2 * x)) + 4;
+    //     break;
+    // }
 
     local_sum += fx;
   }
