@@ -20,10 +20,8 @@ enum FuncType {
   exp_func = 4         // 2x * exp(-2x) + 4
 };
 
-// Класс для хранения математических функций и их первообразных
 class FunctionPair {
  public:
-  // Возвращает значение функции f(x) по ID функции
   static double function(int func_id, double x) {
     switch (func_id) {
       case linear_func:
@@ -41,19 +39,18 @@ class FunctionPair {
     }
   }
 
-  // Возвращает значение первообразной F(x) = ∫f(x)dx по ID функции
   static double integral(int func_id, double x) {
     switch (func_id) {
       case linear_func:
-        return x * x + 7.0 * x;  // ∫(2x+7)dx = x² + 7x
+        return x * x + 7.0 * x;  
       case quadratic_func:
-        return 2.5 * x * x - x * x * x + 7.0 * x;  // ∫(5x-3x²+7)dx
+        return 2.5 * x * x - x * x * x + 7.0 * x;  
       case cubic_func:
-        return 0.25 * x * x * x * x - 2.0 * x * x;  // ∫(x³-4x)dx
+        return 0.25 * x * x * x * x - 2.0 * x * x;  
       case cos_func:
-        return 0.5 * std::sin(2.0 * x);  // ∫cos(2x)dx
+        return 0.5 * std::sin(2.0 * x); 
       case exp_func:
-        return -(x + 0.5) * std::exp(-2.0 * x) + 4.0 * x;  // ∫[2x*exp(-2x)+4]dx
+        return -(x + 0.5) * std::exp(-2.0 * x) + 4.0 * x;  
       default:
         return 0.0;
     }

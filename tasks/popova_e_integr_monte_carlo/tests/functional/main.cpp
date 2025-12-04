@@ -31,26 +31,8 @@ class PopovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, 
   bool CheckTestOutputData(OutType &output_data) final {
     const auto &[a, b, n, func_id] = input_data_;
 
-    // double exp_integral = ((b * b * b * b) / 4 - 2 * b * b) - ((a * a * a * a) / 4 - 2 * a * a);
     double exp_integral = 0.0;
     exp_integral = FunctionPair::integral(func_id, b) - FunctionPair::integral(func_id, a);
-    // switch (func_id) {
-    //   case linear_func:
-    //     exp_integral = ((b * b) + (7 * b)) - ((a * a) + (7 * a));
-    //     break;
-    //   case quadratic_func:
-    //     exp_integral = (2.5 * b * b - b * b * b + 7 * b) - (2.5 * a * a - a * a * a + 7 * a);
-    //     break;
-    //   case cubic_func:
-    //     exp_integral = ((b * b * b * b) / 4 - 2 * b * b) - ((a * a * a * a) / 4 - 2 * a * a);
-    //     break;
-    //   case cos_func:
-    //     exp_integral = 0.5 * (std::sin(2 * b) - std::sin(2 * a));
-    //     break;
-    //   case exp_func:
-    //     exp_integral = (-(b + 0.5) * std::exp(-2 * b) + 4 * b) - (-(a + 0.5) * std::exp(-2 * a) + 4 * a);
-    //     break;
-    // }
 
     double sredn = exp_integral / (b - a);
     double std_dev = (b - a) / std::sqrt(n) * std::max(std::abs(sredn), 1.0);
@@ -71,17 +53,6 @@ namespace {
 TEST_P(PopovaERunFuncTestsProcesses, MatmulFromPic) {
   ExecuteTest(GetParam());
 }
-
-// const std::array<TestType, 10> kTestParam = {{std::make_tuple(std::make_tuple(0.0, 1.0, 1000), "test1"),
-//                                               std::make_tuple(std::make_tuple(0.0, 2.0, 1000), "test2"),
-//                                               std::make_tuple(std::make_tuple(1.0, 3.0, 500), "test3"),
-//                                               std::make_tuple(std::make_tuple(0.0, 1.0, 2000), "test4"),
-//                                               std::make_tuple(std::make_tuple(-2.0, -0.5, 1500), "test5"),
-//                                               std::make_tuple(std::make_tuple(-1.0, 5.0, 80000), "test6"),
-//                                               std::make_tuple(std::make_tuple(-1.0, 5.0, 450000), "test7"),
-//                                               std::make_tuple(std::make_tuple(4.5, 5.0, 100), "test8"),
-//                                               std::make_tuple(std::make_tuple(4.5, 5.0, 8000), "test9"),
-//                                               std::make_tuple(std::make_tuple(-2.0, 5.0, 5), "test10")}};
 
 const std::array<TestType, 10> kTestParam = {
     {std::make_tuple(std::make_tuple(0.0, 1.0, 1000, linear_func), "linear_func_test1"),
