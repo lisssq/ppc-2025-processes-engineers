@@ -15,14 +15,14 @@ class PopovaEIntegrMonteCarloRunPerfTestProcesses : public ppc::util::BaseRunPer
   InType input_data_;
 
   void SetUp() override {
-    input_data_ = std::make_tuple(0.0, 2.0, 10000000, quadratic_func);
+    input_data_ = std::make_tuple(0.0, 2.0, 10000000, kQuadraticFunc);
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
     const auto &[a, b, n, func_id] = input_data_;
 
     double exp_integral = 0.0;
-    exp_integral = FunctionPair::integral(func_id, b) - FunctionPair::integral(func_id, a);
+    exp_integral = FunctionPair::Integral(func_id, b) - FunctionPair::Integral(func_id, a);
 
     double sredn = exp_integral / (b - a);
     double std_dev = (b - a) / std::sqrt(n) * std::max(std::abs(sredn), 1.0);

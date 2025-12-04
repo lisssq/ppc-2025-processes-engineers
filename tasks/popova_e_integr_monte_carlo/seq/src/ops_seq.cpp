@@ -1,7 +1,6 @@
 #include "popova_e_integr_monte_carlo/seq/include/ops_seq.hpp"
 
 #include <cmath>
-#include <random>
 
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
 
@@ -36,13 +35,13 @@ bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
   for (int i = 0; i < point_count_; ++i) {
     current += magic_constant;
     if (current >= 1.0) {
-      current -= 1.0; 
+      current -= 1.0;
     }
 
     double x = a_ + (b_ - a_) * current;
 
     double fx = 0.0;
-    fx = FunctionPair::function(func_id_, x);
+    fx = FunctionPair::Function(func_id_, x);
     sum += fx;
   }
 

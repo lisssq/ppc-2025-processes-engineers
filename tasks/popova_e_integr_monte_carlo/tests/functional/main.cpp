@@ -32,7 +32,7 @@ class PopovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, 
     const auto &[a, b, n, func_id] = input_data_;
 
     double exp_integral = 0.0;
-    exp_integral = FunctionPair::integral(func_id, b) - FunctionPair::integral(func_id, a);
+    exp_integral = FunctionPair::Integral(func_id, b) - FunctionPair::Integral(func_id, a);
 
     double sredn = exp_integral / (b - a);
     double std_dev = (b - a) / std::sqrt(n) * std::max(std::abs(sredn), 1.0);
@@ -55,20 +55,20 @@ TEST_P(PopovaERunFuncTestsProcesses, MatmulFromPic) {
 }
 
 const std::array<TestType, 10> kTestParam = {
-    {std::make_tuple(std::make_tuple(0.0, 1.0, 1000, linear_func), "linear_func_test1"),
-     std::make_tuple(std::make_tuple(-1.0, 5.0, 80000, linear_func), "linear_func_test2"),
+    {std::make_tuple(std::make_tuple(0.0, 1.0, 1000, kLinearFunc), "kLinearFunc_test1"),
+     std::make_tuple(std::make_tuple(-1.0, 5.0, 80000, kLinearFunc), "kLinearFunc_test2"),
 
-     std::make_tuple(std::make_tuple(0.0, 2.0, 1000, quadratic_func), "quadratic_func_test1"),
-     std::make_tuple(std::make_tuple(-1.0, 5.0, 45000, quadratic_func), "quadratic_func_test2"),
+     std::make_tuple(std::make_tuple(0.0, 2.0, 1000, kQuadraticFunc), "kQuadraticFunc_test1"),
+     std::make_tuple(std::make_tuple(-1.0, 5.0, 45000, kQuadraticFunc), "kQuadraticFunc_test2"),
 
-     std::make_tuple(std::make_tuple(1.0, 3.0, 500, cubic_func), "cubic_func_test1"),
-     std::make_tuple(std::make_tuple(4.5, 5.0, 100, cubic_func), "cubic_func_test2"),
+     std::make_tuple(std::make_tuple(1.0, 3.0, 500, kCubicFunc), "kCubicFunc_test1"),
+     std::make_tuple(std::make_tuple(4.5, 5.0, 100, kCubicFunc), "kCubicFunc_test2"),
 
-     std::make_tuple(std::make_tuple(0.0, 1.0, 2000, cos_func), "cos_func_test1"),
-     std::make_tuple(std::make_tuple(4.5, 5.0, 8000, cos_func), "cos_func_test2"),
+     std::make_tuple(std::make_tuple(0.0, 1.0, 2000, kCosFunc), "kCosFunc_test1"),
+     std::make_tuple(std::make_tuple(4.5, 5.0, 8000, kCosFunc), "kCosFunc_test2"),
 
-     std::make_tuple(std::make_tuple(0.0, 1.0, 1000, exp_func), "exp_func_test1"),
-     std::make_tuple(std::make_tuple(-1.0, 5.0, 80000, exp_func), "exp_func_test2")}};
+     std::make_tuple(std::make_tuple(0.0, 1.0, 1000, kExpFunc), "kExpFunc_test1"),
+     std::make_tuple(std::make_tuple(-1.0, 5.0, 80000, kExpFunc), "kExpFunc_test2")}};
 
 const auto kTestTasksList = std::tuple_cat(
     ppc::util::AddFuncTask<PopovaEIntegrMonteCarloMPI, InType>(kTestParam, PPC_SETTINGS_popova_e_integr_monte_carlo),

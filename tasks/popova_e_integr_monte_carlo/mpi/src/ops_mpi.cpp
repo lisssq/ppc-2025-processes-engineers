@@ -75,7 +75,7 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
     double x = a_ + (b_ - a_) * t;
 
     double fx = 0.0;
-    fx = FunctionPair::function(func_id_, x);
+    fx = FunctionPair::Function(func_id_, x);
     local_sum += fx;
   }
 

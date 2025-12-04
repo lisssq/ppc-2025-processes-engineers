@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+#include <cstdint>
 #include <string>
 #include <tuple>
 
@@ -13,44 +15,44 @@ using TestType = std::tuple<std::tuple<double, double, int, int>, std::string>;
 using BaseTask = ppc::task::Task<InType, OutType>;
 
 enum FuncType {
-  linear_func = 0,     // 2x + 7
-  quadratic_func = 1,  // 5x - 3x^2 + 7
-  cubic_func = 2,      // x^3 - 4x
-  cos_func = 3,        // cos(2x)
-  exp_func = 4         // 2x * exp(-2x) + 4
+  kLinearFunc = 0,     // 2x + 7
+  kQuadraticFunc = 1,  // 5x - 3x^2 + 7
+  kCubicFunc = 2,      // x^3 - 4x
+  kCosFunc = 3,        // cos(2x)
+  kExpFunc = 4         // 2x * exp(-2x) + 4
 };
 
 class FunctionPair {
  public:
-  static double function(int func_id, double x) {
+  static double Function(int func_id, double x) {
     switch (func_id) {
-      case linear_func:
-        return 2.0 * x + 7.0;
-      case quadratic_func:
-        return 5.0 * x - 3.0 * x * x + 7.0;
-      case cubic_func:
-        return x * x * x - 4.0 * x;
-      case cos_func:
-        return std::cos(2.0 * x);
-      case exp_func:
-        return 2.0 * x * std::exp(-2.0 * x) + 4.0;
+      case kLinearFunc:
+        return ((2.0 * x) + 7.0);
+      case kQuadraticFunc:
+        return ((5.0 * x) - (3.0 * x * x) + 7.0);
+      case kCubicFunc:
+        return ((x * x * x) - (4.0 * x));
+      case kCosFunc:
+        return (std::cos(2.0 * x));
+      case kExpFunc:
+        return ((2.0 * x * std::exp(-2.0 * x)) + 4.0);
       default:
         return 0.0;
     }
   }
 
-  static double integral(int func_id, double x) {
+  static double Integral(int func_id, double x) {
     switch (func_id) {
-      case linear_func:
-        return x * x + 7.0 * x;  
-      case quadratic_func:
-        return 2.5 * x * x - x * x * x + 7.0 * x;  
-      case cubic_func:
-        return 0.25 * x * x * x * x - 2.0 * x * x;  
-      case cos_func:
-        return 0.5 * std::sin(2.0 * x); 
-      case exp_func:
-        return -(x + 0.5) * std::exp(-2.0 * x) + 4.0 * x;  
+      case kLinearFunc:
+        return ((x * x) + (7.0 * x));
+      case kQuadraticFunc:
+        return ((2.5 * x * x) - (x * x * x) + (7.0 * x));
+      case kCubicFunc:
+        return ((0.25 * x * x * x * x) - (2.0 * x * x));
+      case kCosFunc:
+        return (0.5 * std::sin(2.0 * x));
+      case kExpFunc:
+        return ((-(x + 0.5) * std::exp(-2.0 * x)) + (4.0 * x));
       default:
         return 0.0;
     }
