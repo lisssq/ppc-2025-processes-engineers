@@ -40,7 +40,7 @@ class FunctionPair {
         return 0.0;
     }
   }
-
+  
   // Возвращает значение первообразной F(x) = ∫f(x)dx по ID функции
   static double integral(int func_id, double x) {
     switch (func_id) {
@@ -59,5 +59,6 @@ class FunctionPair {
     }
   }
 };
+
 
 }  // namespace popova_e_integr_monte_carlo
