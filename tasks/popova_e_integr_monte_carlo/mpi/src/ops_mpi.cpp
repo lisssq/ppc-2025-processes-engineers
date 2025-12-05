@@ -2,7 +2,8 @@
 
 #include <mpi.h>
 
-#include <random>
+#include <cmath>
+#include <vector>
 
 #include "popova_e_integr_monte_carlo/common/include/common.hpp"
 
@@ -16,7 +17,7 @@ PopovaEIntegrMonteCarloMPI::PopovaEIntegrMonteCarloMPI(const InType &in) {
 
 bool PopovaEIntegrMonteCarloMPI::ValidationImpl() {
   const auto &[a, b, n, func_id] = GetInput();
-  return (a < b) && (n > 0) && (func_id >= 0) && (func_id <= 4);
+  return (a < b) && (n > 0) && (func_id >= FuncType::kLinearFunc) && (func_id <= FuncType::kExpFunc);
 }
 
 bool PopovaEIntegrMonteCarloMPI::PreProcessingImpl() {
@@ -72,7 +73,7 @@ bool PopovaEIntegrMonteCarloMPI::RunImpl() {
 
   for (int i = 0; i < local_points_to_process; ++i) {
     double t = std::fmod(local_seeds[i] * magic_constant, 1.0);
-    double x = a_ + (b_ - a_) * t;
+    double x = a_ + ((b_ - a_) * t);
 
     double fx = 0.0;
     fx = FunctionPair::Function(func_id_, x);

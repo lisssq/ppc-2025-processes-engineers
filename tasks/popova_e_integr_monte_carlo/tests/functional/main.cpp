@@ -55,20 +55,20 @@ TEST_P(PopovaERunFuncTestsProcesses, MatmulFromPic) {
 }
 
 const std::array<TestType, 10> kTestParam = {
-    {std::make_tuple(std::make_tuple(0.0, 1.0, 1000, kLinearFunc), "kLinearFunc_test1"),
-     std::make_tuple(std::make_tuple(-1.0, 5.0, 80000, kLinearFunc), "kLinearFunc_test2"),
+    {std::make_tuple(std::make_tuple(0.0, 1.0, 1000, FuncType::kLinearFunc), "kLinearFunc_test1"),
+     std::make_tuple(std::make_tuple(-1.0, 5.0, 80000, FuncType::kLinearFunc), "kLinearFunc_test2"),
 
-     std::make_tuple(std::make_tuple(0.0, 2.0, 1000, kQuadraticFunc), "kQuadraticFunc_test1"),
-     std::make_tuple(std::make_tuple(-1.0, 5.0, 45000, kQuadraticFunc), "kQuadraticFunc_test2"),
+     std::make_tuple(std::make_tuple(0.0, 2.0, 1000, FuncType::kQuadraticFunc), "kQuadraticFunc_test1"),
+     std::make_tuple(std::make_tuple(-1.0, 5.0, 45000, FuncType::kQuadraticFunc), "kQuadraticFunc_test2"),
 
-     std::make_tuple(std::make_tuple(1.0, 3.0, 500, kCubicFunc), "kCubicFunc_test1"),
-     std::make_tuple(std::make_tuple(4.5, 5.0, 100, kCubicFunc), "kCubicFunc_test2"),
+     std::make_tuple(std::make_tuple(1.0, 3.0, 500, FuncType::kCubicFunc), "kCubicFunc_test1"),
+     std::make_tuple(std::make_tuple(4.5, 5.0, 100, FuncType::kCubicFunc), "kCubicFunc_test2"),
 
-     std::make_tuple(std::make_tuple(0.0, 1.0, 2000, kCosFunc), "kCosFunc_test1"),
-     std::make_tuple(std::make_tuple(4.5, 5.0, 8000, kCosFunc), "kCosFunc_test2"),
+     std::make_tuple(std::make_tuple(0.0, 1.0, 2000, FuncType::kCosFunc), "kCosFunc_test1"),
+     std::make_tuple(std::make_tuple(4.5, 5.0, 8000, FuncType::kCosFunc), "kCosFunc_test2"),
 
-     std::make_tuple(std::make_tuple(0.0, 1.0, 1000, kExpFunc), "kExpFunc_test1"),
-     std::make_tuple(std::make_tuple(-1.0, 5.0, 80000, kExpFunc), "kExpFunc_test2")}};
+     std::make_tuple(std::make_tuple(0.0, 1.0, 1000, FuncType::kExpFunc), "kExpFunc_test1"),
+     std::make_tuple(std::make_tuple(-1.0, 5.0, 80000, FuncType::kExpFunc), "kExpFunc_test2")}};
 
 const auto kTestTasksList = std::tuple_cat(
     ppc::util::AddFuncTask<PopovaEIntegrMonteCarloMPI, InType>(kTestParam, PPC_SETTINGS_popova_e_integr_monte_carlo),

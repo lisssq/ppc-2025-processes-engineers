@@ -21,7 +21,7 @@ class PopovaEIntegrMonteCarloMPI : public BaseTask {
   int point_count_{};
   double a_{};
   double b_{};
-  int func_id_{};
+  FuncType func_id_{};
 };
 
 }  // namespace popova_e_integr_monte_carlo

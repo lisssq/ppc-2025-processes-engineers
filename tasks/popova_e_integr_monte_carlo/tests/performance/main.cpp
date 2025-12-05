@@ -15,7 +15,7 @@ class PopovaEIntegrMonteCarloRunPerfTestProcesses : public ppc::util::BaseRunPer
   InType input_data_;
 
   void SetUp() override {
-    input_data_ = std::make_tuple(0.0, 2.0, 10000000, kQuadraticFunc);
+    input_data_ = std::make_tuple(0.0, 2.0, 10000000, FuncType::kQuadraticFunc);
   }
 
   bool CheckTestOutputData(OutType &output_data) final {

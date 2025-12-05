@@ -14,7 +14,7 @@ PopovaEIntegrMonteCarloSEQ::PopovaEIntegrMonteCarloSEQ(const InType &in) {
 
 bool PopovaEIntegrMonteCarloSEQ::ValidationImpl() {
   const auto &[a, b, n, func_id] = GetInput();
-  return (a < b) && (n > 0) && (func_id >= 0) && (func_id <= 4);
+  return (a < b) && (n > 0) && (func_id >= FuncType::kLinearFunc) && (func_id <= FuncType::kExpFunc);
 }
 
 bool PopovaEIntegrMonteCarloSEQ::PreProcessingImpl() {
@@ -38,7 +38,7 @@ bool PopovaEIntegrMonteCarloSEQ::RunImpl() {
       current -= 1.0;
     }
 
-    double x = a_ + (b_ - a_) * current;
+    double x = a_ + ((b_ - a_) * current);
 
     double fx = 0.0;
     fx = FunctionPair::Function(func_id_, x);
