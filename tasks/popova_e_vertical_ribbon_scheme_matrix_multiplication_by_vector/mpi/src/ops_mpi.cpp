@@ -1,72 +1,72 @@
-#include "popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector/mpi/include/ops_mpi.hpp"
+// #include "popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector/mpi/include/ops_mpi.hpp"
 
-#include <mpi.h>
+// #include <mpi.h>
 
-#include <numeric>
-#include <vector>
+// #include <numeric>
+// #include <vector>
 
-#include "popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector/common/include/common.hpp"
-#include "util/include/util.hpp"
+// #include "popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector/common/include/common.hpp"
+// #include "util/include/util.hpp"
 
-namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector {
+// namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector {
 
-PopovaEMatrixMultiplicationByVectorMPI::PopovaEMatrixMultiplicationByVectorMPI(const InType &in) {
-  SetTypeOfTask(GetStaticTypeOfTask());
-  GetInput() = in;
-  GetOutput() = 0;
-}
+// PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI(const InType &in) {
+//   SetTypeOfTask(GetStaticTypeOfTask());
+//   GetInput() = in;
+//   GetOutput() = 0;
+// }
 
-bool PopovaEMatrixMultiplicationByVectorMPI::ValidationImpl() {
-  return (GetInput() > 0) && (GetOutput() == 0);
-}
+// bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::ValidationImpl() {
+//   return (GetInput() > 0) && (GetOutput() == 0);
+// }
 
-bool PopovaEMatrixMultiplicationByVectorMPI::PreProcessingImpl() {
-  GetOutput() = 2 * GetInput();
-  return GetOutput() > 0;
-}
+// bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::PreProcessingImpl() {
+//   GetOutput() = 2 * GetInput();
+//   return GetOutput() > 0;
+// }
 
-bool PopovaEMatrixMultiplicationByVectorMPI::RunImpl() {
-  auto input = GetInput();
-  if (input == 0) {
-    return false;
-  }
+// bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::RunImpl() {
+//   auto input = GetInput();
+//   if (input == 0) {
+//     return false;
+//   }
 
-  for (InType i = 0; i < GetInput(); i++) {
-    for (InType j = 0; j < GetInput(); j++) {
-      for (InType k = 0; k < GetInput(); k++) {
-        std::vector<InType> tmp(i + j + k, 1);
-        GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
-        GetOutput() -= i + j + k;
-      }
-    }
-  }
+//   for (InType i = 0; i < GetInput(); i++) {
+//     for (InType j = 0; j < GetInput(); j++) {
+//       for (InType k = 0; k < GetInput(); k++) {
+//         std::vector<InType> tmp(i + j + k, 1);
+//         GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
+//         GetOutput() -= i + j + k;
+//       }
+//     }
+//   }
 
-  const int num_threads = ppc::util::GetNumThreads();
-  GetOutput() *= num_threads;
+//   const int num_threads = ppc::util::GetNumThreads();
+//   GetOutput() *= num_threads;
 
-  int rank = 0;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+//   int rank = 0;
+//   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  if (rank == 0) {
-    GetOutput() /= num_threads;
-  } else {
-    int counter = 0;
-    for (int i = 0; i < num_threads; i++) {
-      counter++;
-    }
+//   if (rank == 0) {
+//     GetOutput() /= num_threads;
+//   } else {
+//     int counter = 0;
+//     for (int i = 0; i < num_threads; i++) {
+//       counter++;
+//     }
 
-    if (counter != 0) {
-      GetOutput() /= counter;
-    }
-  }
+//     if (counter != 0) {
+//       GetOutput() /= counter;
+//     }
+//   }
 
-  MPI_Barrier(MPI_COMM_WORLD);
-  return GetOutput() > 0;
-}
+//   MPI_Barrier(MPI_COMM_WORLD);
+//   return GetOutput() > 0;
+// }
 
-bool PopovaEMatrixMultiplicationByVectorMPI::PostProcessingImpl() {
-  GetOutput() -= GetInput();
-  return GetOutput() > 0;
-}
+// bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::PostProcessingImpl() {
+//   GetOutput() -= GetInput();
+//   return GetOutput() > 0;
+// }
 
-}  // namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector
+// }  // namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector

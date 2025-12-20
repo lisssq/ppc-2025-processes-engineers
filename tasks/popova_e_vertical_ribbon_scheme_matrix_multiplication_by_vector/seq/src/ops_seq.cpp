@@ -8,53 +8,58 @@
 
 namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector {
 
-PopovaEMatrixMultiplicationByVectorSEQ::PopovaEMatrixMultiplicationByVectorSEQ(const InType &in) {
+PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ::PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ(
+    const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
-  GetOutput() = 0;
+  GetOutput() = std::vector<double>();
 }
 
-bool PopovaEMatrixMultiplicationByVectorSEQ::ValidationImpl() {
-  return (GetInput() > 0) && (GetOutput() == 0);
+bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ::ValidationImpl() {
+  int rows = GetInput().first;
+  int cols = GetInput().second;
+  return (rows > 0 && cols > 0) && GetOutput().empty();
 }
 
-bool PopovaEMatrixMultiplicationByVectorSEQ::PreProcessingImpl() {
-  GetOutput() = 2 * GetInput();
-  return GetOutput() > 0;
+bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ::PreProcessingImpl() {
+  int rows = GetInput().first;
+  int cols = GetInput().second;
+
+  matrix_.resize(rows, std::vector<double>(cols, 0.0));
+  vector_.resize(cols, 0.0);
+  GetOutput().resize(rows, 0.0);
+
+  return true;
 }
 
-bool PopovaEMatrixMultiplicationByVectorSEQ::RunImpl() {
-  if (GetInput() == 0) {
-    return false;
-  }
+bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ::RunImpl() {
+  int rows = GetInput().first;
+  int cols = GetInput().second;
+  auto &result = GetOutput();
 
-  for (InType i = 0; i < GetInput(); i++) {
-    for (InType j = 0; j < GetInput(); j++) {
-      for (InType k = 0; k < GetInput(); k++) {
-        std::vector<InType> tmp(i + j + k, 1);
-        GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
-        GetOutput() -= i + j + k;
-      }
+  // матрица
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      matrix_[i][j] = (i + j) * 1.5;
     }
   }
-
-  const int num_threads = ppc::util::GetNumThreads();
-  GetOutput() *= num_threads;
-
-  int counter = 0;
-  for (int i = 0; i < num_threads; i++) {
-    counter++;
+  // вектор
+  for (int j = 0; j < cols; j++) {
+    vector_[j] = j * 2.0;
   }
-
-  if (counter != 0) {
-    GetOutput() /= counter;
+  // умножение
+  for (int i = 0; i < rows; i++) {
+    double sum = 0.0;
+    for (int j = 0; j < cols; j++) {
+      sum += matrix_[i][j] * vector_[j];
+    }
+    result[i] = sum;
   }
-  return GetOutput() > 0;
+  return true;
 }
 
-bool PopovaEMatrixMultiplicationByVectorSEQ::PostProcessingImpl() {
-  GetOutput() -= GetInput();
-  return GetOutput() > 0;
+bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ::PostProcessingImpl() {
+  return true;
 }
 
 }  // namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector
