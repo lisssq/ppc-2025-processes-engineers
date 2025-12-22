@@ -22,21 +22,8 @@
 
 namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector {
 
-std::vector<double> CalculateExpectedResult(const InType &input) {
-  int rows = input.first;
-  int cols = input.second;
-  std::vector<double> expected(rows, 0.0);
-
-  for (int i = 0; i < rows; i++) {
-    for (int j = 0; j < cols; j++) {
-      double matrix_value = (i + j) * 1.5;
-      double vector_value = j * 2.0;
-      expected[i] += matrix_value * vector_value;
-    }
-  }
-
-  return expected;
-}
+// ОБЪЯВЛЕНИЕ ФУНКЦИИ
+static std::vector<double> CalculateExpectedResult(const InType &input);
 
 class PopovaEMatrixVectorRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
@@ -62,7 +49,7 @@ class PopovaEMatrixVectorRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
     auto expected = CalculateExpectedResult(input_data_);
 
     double epsilon = 1e-10;
-    for (size_t i = 0; i < expected.size(); i++) {
+    for (size_t i = 0; i < expected.size(); ++i) {
       if (std::abs(output_data[i] - expected[i]) > epsilon) {
         return false;
       }
@@ -78,6 +65,23 @@ class PopovaEMatrixVectorRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
  private:
   InType input_data_;
 };
+
+// ОПРЕДЕЛЕНИЕ ФУНКЦИИ
+std::vector<double> CalculateExpectedResult(const InType &input) {
+  int rows = input.first;
+  int cols = input.second;
+  std::vector<double> expected(rows, 0.0);
+
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      double matrix_value = (i + j) * 1.5;
+      double vector_value = j * 2.0;
+      expected[i] += matrix_value * vector_value;
+    }
+  }
+
+  return expected;
+}
 
 namespace {
 
@@ -99,15 +103,12 @@ const std::array<TestType, 14> kTestParam = {std::make_tuple(std::make_pair(1, 1
                                              std::make_tuple(std::make_pair(3, 15), "rectangular_matrix_3x15"),
                                              std::make_tuple(std::make_pair(84, 11), "rectangular_matrix_84x11"),
                                              std::make_tuple(std::make_pair(11, 84), "rectangular_matrix_11x84")};
+
 const auto kTestTasksList =
     std::tuple_cat(ppc::util::AddFuncTask<PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI, InType>(
                        kTestParam, PPC_SETTINGS_popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector),
                    ppc::util::AddFuncTask<PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ, InType>(
                        kTestParam, PPC_SETTINGS_popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector));
-
-// const auto kTestTasksList =
-//     std::tuple_cat(ppc::util::AddFuncTask<PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ, InType>(
-//         kTestParam, PPC_SETTINGS_popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 

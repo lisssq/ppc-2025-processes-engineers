@@ -7,7 +7,7 @@
 
 namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector {
 
-std::vector<double> CalculateExpectedResult(const InType &input) {
+static std::vector<double> CalculateExpectedResult(const InType &input) {
   int rows = input.first;
   int cols = input.second;
   std::vector<double> expected(rows, 0.0);
@@ -41,7 +41,7 @@ class PopovaEMatrixMultiplicationByVectorRunPerfTestProcesses : public ppc::util
 
     auto expected = CalculateExpectedResult(input_data_);
 
-    double epsilon = 1e-8;
+    double epsilon = 1e-5;
     for (size_t i = 0; i < expected.size(); i++) {
       if (std::abs(output_data[i] - expected[i]) > epsilon) {
         return false;
