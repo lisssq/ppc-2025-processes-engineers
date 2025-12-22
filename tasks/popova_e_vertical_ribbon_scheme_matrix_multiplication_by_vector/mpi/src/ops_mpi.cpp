@@ -8,8 +8,8 @@
 
 namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector {
 
-PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::
-    PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI(const InType& in) {
+PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI(
+    const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = std::vector<double>();
@@ -94,12 +94,7 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::RunImpl() {
     global_result.resize(rows_, 0.0);
   }
 
-  MPI_Reduce(local_result.data(),
-             rank == 0 ? global_result.data() : nullptr,
-             rows_,
-             MPI_DOUBLE,
-             MPI_SUM,
-             0,
+  MPI_Reduce(local_result.data(), rank == 0 ? global_result.data() : nullptr, rows_, MPI_DOUBLE, MPI_SUM, 0,
              MPI_COMM_WORLD);
 
   if (rank == 0) {
