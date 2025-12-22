@@ -24,6 +24,8 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::ValidationImpl(
 bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::PreProcessingImpl() {
   rows_ = GetInput().first;
   cols_ = GetInput().second;
+
+  GetOutput().resize(rows_, 0.0);
   return true;
 }
 
@@ -55,6 +57,8 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::RunImpl() {
       GetOutput() = result;
     }
 
+    MPI_Bcast(GetOutput().data(), rows_, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
     MPI_Barrier(MPI_COMM_WORLD);
     return true;
   }
@@ -82,24 +86,16 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::RunImpl() {
   }
 
   std::vector<double> local_result(rows_, 0.0);
-
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < local_cols; ++j) {
       local_result[i] += local_matrix[j * rows_ + i] * local_vector[j];
     }
   }
 
-  std::vector<double> global_result;
-  if (rank == 0) {
-    global_result.resize(rows_, 0.0);
-  }
+  std::vector<double> global_result(rows_, 0.0);
+  MPI_Allreduce(local_result.data(), global_result.data(), rows_, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
-  MPI_Reduce(local_result.data(), rank == 0 ? global_result.data() : nullptr, rows_, MPI_DOUBLE, MPI_SUM, 0,
-             MPI_COMM_WORLD);
-
-  if (rank == 0) {
-    GetOutput() = global_result;
-  }
+  GetOutput() = global_result;
 
   MPI_Barrier(MPI_COMM_WORLD);
   return true;
