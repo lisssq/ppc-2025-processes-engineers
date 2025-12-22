@@ -1,5 +1,6 @@
 #include "popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector/seq/include/ops_seq.hpp"
 
+#include <iostream>
 #include <numeric>
 #include <vector>
 
@@ -22,39 +23,44 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ::ValidationImpl(
 }
 
 bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ::PreProcessingImpl() {
-  int rows = GetInput().first;
-  int cols = GetInput().second;
+  rows_ = GetInput().first;
+  cols_ = GetInput().second;
 
-  matrix_.resize(rows, std::vector<double>(cols, 0.0));
-  vector_.resize(cols, 0.0);
-  GetOutput().resize(rows, 0.0);
+  matrix_.resize(cols_);
+  for (int j = 0; j < cols_; j++) {
+    matrix_[j].resize(rows_, 0.0);
+  }
+
+  vector_.resize(cols_, 0.0);
+  GetOutput().resize(rows_, 0.0);
 
   return true;
 }
 
 bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ::RunImpl() {
-  int rows = GetInput().first;
-  int cols = GetInput().second;
-  auto &result = GetOutput();
-
-  // матрица
-  for (int i = 0; i < rows; i++) {
-    for (int j = 0; j < cols; j++) {
-      matrix_[i][j] = (i + j) * 1.5;
+  // заполняем матрицу
+  for (int j = 0; j < cols_; j++) {
+    for (int i = 0; i < rows_; i++) {
+      matrix_[j][i] = (i + j) * 1.5;
     }
   }
-  // вектор
-  for (int j = 0; j < cols; j++) {
+
+  // заполняем вектор
+  for (int j = 0; j < cols_; j++) {
     vector_[j] = j * 2.0;
   }
-  // умножение
-  for (int i = 0; i < rows; i++) {
+
+  auto &result = GetOutput();
+
+  // умножаем
+  for (int i = 0; i < rows_; i++) {
     double sum = 0.0;
-    for (int j = 0; j < cols; j++) {
-      sum += matrix_[i][j] * vector_[j];
+    for (int j = 0; j < cols_; j++) {
+      sum += matrix_[j][i] * vector_[j];
     }
     result[i] = sum;
   }
+
   return true;
 }
 

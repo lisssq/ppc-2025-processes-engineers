@@ -18,9 +18,10 @@ class PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ : public BaseTa
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-
   std::vector<std::vector<double>> matrix_;
   std::vector<double> vector_;
+  int rows_ = 0;
+  int cols_ = 0;
 };
 
 }  // namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector
