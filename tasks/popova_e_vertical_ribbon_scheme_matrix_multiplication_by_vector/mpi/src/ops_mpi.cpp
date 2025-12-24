@@ -9,7 +9,6 @@
 
 namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector {
 
-// Вспомогательная функция для распределения столбцов (объявлена ПЕРВОЙ!)
 static std::pair<int, int> GetLocalColumnsInfo(int cols, int rank, int size) {
   int base_cols = cols / size;
   int remainder = cols % size;
@@ -31,7 +30,6 @@ static std::pair<int, int> GetLocalColumnsInfo(int cols, int rank, int size) {
   return {local_cols, start_col};
 }
 
-// Вспомогательная функция для последовательных вычислений
 static void ComputeSequential(int rows, int cols, std::vector<double> &result) {
   for (int i = 0; i < rows; ++i) {
     double sum = 0.0;
@@ -42,7 +40,6 @@ static void ComputeSequential(int rows, int cols, std::vector<double> &result) {
   }
 }
 
-// Вспомогательная функция для параллельных вычислений
 static void ComputeParallel(int rows, int cols, int rank, int size, std::vector<double> &result) {
   auto [local_cols, start_col] = GetLocalColumnsInfo(cols, rank, size);
 
@@ -86,14 +83,11 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::RunImpl() {
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   if (cols_ < size) {
-    // Слишком мало столбцов для распараллеливания
-    // Процесс 0 вычисляет, остальные получают результат
     if (rank == 0) {
       ComputeSequential(rows_, cols_, GetOutput());
     }
     MPI_Bcast(GetOutput().data(), rows_, MPI_DOUBLE, 0, MPI_COMM_WORLD);
   } else {
-    // Нормальное распараллеливание
     ComputeParallel(rows_, cols_, rank, size, GetOutput());
   }
 
