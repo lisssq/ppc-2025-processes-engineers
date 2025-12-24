@@ -1,14 +1,9 @@
 #include <gtest/gtest.h>
 #include <stb/stb_image.h>
 
-#include <algorithm>
-#include <array>
 #include <cmath>
 #include <cstddef>
-#include <cstdint>
 #include <iostream>
-#include <numeric>
-#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -22,7 +17,6 @@
 
 namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector {
 
-// ОБЪЯВЛЕНИЕ ФУНКЦИИ
 static std::vector<double> CalculateExpectedResult(const InType &input);
 
 class PopovaEMatrixVectorRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
@@ -66,7 +60,6 @@ class PopovaEMatrixVectorRunFuncTestsProcesses : public ppc::util::BaseRunFuncTe
   InType input_data_;
 };
 
-// ОПРЕДЕЛЕНИЕ ФУНКЦИИ
 std::vector<double> CalculateExpectedResult(const InType &input) {
   int rows = input.first;
   int cols = input.second;

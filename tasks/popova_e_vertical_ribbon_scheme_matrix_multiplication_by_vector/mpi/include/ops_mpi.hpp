@@ -1,4 +1,6 @@
 #pragma once
+#include <utility>
+#include <vector>
 
 #include "popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector/common/include/common.hpp"
 #include "task/include/task.hpp"
