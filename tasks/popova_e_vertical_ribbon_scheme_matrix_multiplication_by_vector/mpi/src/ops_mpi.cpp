@@ -2,11 +2,61 @@
 
 #include <mpi.h>
 
+#include <cstddef>
 #include <vector>
 
 #include "popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector/common/include/common.hpp"
 
 namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector {
+
+// Вспомогательная функция для распределения столбцов (объявлена ПЕРВОЙ!)
+static std::pair<int, int> GetLocalColumnsInfo(int cols, int rank, int size) {
+  int base_cols = cols / size;
+  int remainder = cols % size;
+
+  int local_cols = base_cols;
+  if (rank < remainder) {
+    local_cols = local_cols + 1;
+  }
+
+  int start_col = 0;
+  for (int i = 0; i < rank; ++i) {
+    int cols_for_i = base_cols;
+    if (i < remainder) {
+      cols_for_i = cols_for_i + 1;
+    }
+    start_col = start_col + cols_for_i;
+  }
+
+  return {local_cols, start_col};
+}
+
+// Вспомогательная функция для последовательных вычислений
+static void ComputeSequential(int rows, int cols, std::vector<double> &result) {
+  for (int i = 0; i < rows; ++i) {
+    double sum = 0.0;
+    for (int j = 0; j < cols; ++j) {
+      sum += (i + j) * 1.5 * (j * 2.0);
+    }
+    result[i] = sum;
+  }
+}
+
+// Вспомогательная функция для параллельных вычислений
+static void ComputeParallel(int rows, int cols, int rank, int size, std::vector<double> &result) {
+  auto [local_cols, start_col] = GetLocalColumnsInfo(cols, rank, size);
+
+  std::vector<double> local_result(rows, 0.0);
+
+  for (int i = 0; i < rows; ++i) {
+    for (int j = 0; j < local_cols; ++j) {
+      int global_col = start_col + j;
+      local_result[i] += (i + global_col) * 1.5 * (global_col * 2.0);
+    }
+  }
+
+  MPI_Allreduce(local_result.data(), result.data(), rows, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+}
 
 PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI(
     const InType &in) {
@@ -36,67 +86,16 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::RunImpl() {
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   if (cols_ < size) {
+    // Слишком мало столбцов для распараллеливания
+    // Процесс 0 вычисляет, остальные получают результат
     if (rank == 0) {
-      std::vector<std::vector<double>> matrix(cols_, std::vector<double>(rows_));
-      std::vector<double> vec(cols_);
-
-      for (int j = 0; j < cols_; ++j) {
-        vec[j] = j * 2.0;
-        for (int i = 0; i < rows_; ++i) {
-          matrix[j][i] = (i + j) * 1.5;
-        }
-      }
-
-      std::vector<double> result(rows_, 0.0);
-      for (int i = 0; i < rows_; ++i) {
-        for (int j = 0; j < cols_; ++j) {
-          result[i] += matrix[j][i] * vec[j];
-        }
-      }
-
-      GetOutput() = result;
+      ComputeSequential(rows_, cols_, GetOutput());
     }
-
     MPI_Bcast(GetOutput().data(), rows_, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-
-    MPI_Barrier(MPI_COMM_WORLD);
-    return true;
+  } else {
+    // Нормальное распараллеливание
+    ComputeParallel(rows_, cols_, rank, size, GetOutput());
   }
-
-  int base_cols = cols_ / size;
-  int remainder = cols_ % size;
-
-  int local_cols = base_cols + (rank < remainder ? 1 : 0);
-
-  int start_col = 0;
-  for (int i = 0; i < rank; ++i) {
-    start_col += base_cols + (i < remainder ? 1 : 0);
-  }
-
-  // std::vector<double> local_matrix(local_cols * rows_);
-  std::vector<double> local_matrix(static_cast<size_t>(local_cols) * static_cast<size_t>(rows_));
-  std::vector<double> local_vector(local_cols);
-
-  for (int j = 0; j < local_cols; ++j) {
-    int global_col = start_col + j;
-    local_vector[j] = global_col * 2.0;
-
-    for (int i = 0; i < rows_; ++i) {
-      local_matrix[(j * rows_) + i] = (i + global_col) * 1.5;
-    }
-  }
-
-  std::vector<double> local_result(rows_, 0.0);
-  for (int i = 0; i < rows_; ++i) {
-    for (int j = 0; j < local_cols; ++j) {
-      local_result[i] += local_matrix[(j * rows_) + i] * local_vector[j];
-    }
-  }
-
-  std::vector<double> global_result(rows_, 0.0);
-  MPI_Allreduce(local_result.data(), global_result.data(), rows_, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-  GetOutput() = global_result;
 
   MPI_Barrier(MPI_COMM_WORLD);
   return true;
