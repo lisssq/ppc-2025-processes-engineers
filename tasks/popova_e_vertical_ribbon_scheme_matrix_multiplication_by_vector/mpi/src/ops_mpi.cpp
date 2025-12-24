@@ -73,7 +73,8 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::RunImpl() {
     start_col += base_cols + (i < remainder ? 1 : 0);
   }
 
-  std::vector<double> local_matrix(local_cols * rows_);
+  // std::vector<double> local_matrix(local_cols * rows_);
+  std::vector<double> local_matrix(static_cast<size_t>(local_cols) * static_cast<size_t>(rows_));
   std::vector<double> local_vector(local_cols);
 
   for (int j = 0; j < local_cols; ++j) {
@@ -81,14 +82,14 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::RunImpl() {
     local_vector[j] = global_col * 2.0;
 
     for (int i = 0; i < rows_; ++i) {
-      local_matrix[j * rows_ + i] = (i + global_col) * 1.5;
+      local_matrix[(j * rows_) + i] = (i + global_col) * 1.5;
     }
   }
 
   std::vector<double> local_result(rows_, 0.0);
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < local_cols; ++j) {
-      local_result[i] += local_matrix[j * rows_ + i] * local_vector[j];
+      local_result[i] += local_matrix[(j * rows_) + i] * local_vector[j];
     }
   }
 
