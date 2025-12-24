@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector/common/include/common.hpp"
-#include "util/include/util.hpp"
+// #include "util/include/util.hpp"
 
 namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector {
 

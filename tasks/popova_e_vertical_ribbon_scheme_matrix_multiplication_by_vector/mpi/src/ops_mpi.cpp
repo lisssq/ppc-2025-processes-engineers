@@ -2,14 +2,16 @@
 
 #include <mpi.h>
 
-#include <cstddef>
+#include <utility>
 #include <vector>
 
 #include "popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector/common/include/common.hpp"
 
 namespace popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector {
 
-static std::pair<int, int> GetLocalColumnsInfo(int cols, int rank, int size) {
+std::pair<int, int> PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::GetLocalColumnsCounts(int cols,
+                                                                                                      int rank,
+                                                                                                      int size) {
   int base_cols = cols / size;
   int remainder = cols % size;
 
@@ -30,7 +32,8 @@ static std::pair<int, int> GetLocalColumnsInfo(int cols, int rank, int size) {
   return {local_cols, start_col};
 }
 
-static void ComputeSequential(int rows, int cols, std::vector<double> &result) {
+void PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::CountSeq(int rows, int cols,
+                                                                          std::vector<double> &result) {
   for (int i = 0; i < rows; ++i) {
     double sum = 0.0;
     for (int j = 0; j < cols; ++j) {
@@ -40,8 +43,9 @@ static void ComputeSequential(int rows, int cols, std::vector<double> &result) {
   }
 }
 
-static void ComputeParallel(int rows, int cols, int rank, int size, std::vector<double> &result) {
-  auto [local_cols, start_col] = GetLocalColumnsInfo(cols, rank, size);
+void PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::CountMpi(int rows, int cols, int rank, int size,
+                                                                          std::vector<double> &result) {
+  auto [local_cols, start_col] = GetLocalColumnsCounts(cols, rank, size);
 
   std::vector<double> local_result(rows, 0.0);
 
@@ -84,11 +88,11 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::RunImpl() {
 
   if (cols_ < size) {
     if (rank == 0) {
-      ComputeSequential(rows_, cols_, GetOutput());
+      CountSeq(rows_, cols_, GetOutput());
     }
     MPI_Bcast(GetOutput().data(), rows_, MPI_DOUBLE, 0, MPI_COMM_WORLD);
   } else {
-    ComputeParallel(rows_, cols_, rank, size, GetOutput());
+    CountMpi(rows_, cols_, rank, size, GetOutput());
   }
 
   MPI_Barrier(MPI_COMM_WORLD);
