@@ -44,7 +44,9 @@ using OutType = std::vector<double>;
 for (int i = 0; i < rows; ++i) {
   double sum = 0.0;
   for (int j = 0; j < cols; ++j) {
-    sum += (i + j) * 1.5 * (j * 2.0);
+    double matrix_value = (i + j) * 1.5; 
+    double vector_value = j * 2.0;      
+    sum += matrix_value * vector_value; 
   }
   result[i] = sum;
 }
@@ -58,4 +60,149 @@ for (int i = 0; i < rows; ++i) {
 - Каждый процесс получает блок столбцов матрицы и соответствующие элементы вектора;
 - Каждый процесс вычисляет частичную сумму для каждой строки на своей части столбцов;
 - Частичные суммы собираются воедино с помощью MPI_Allreduce.
+  
 Особенности реализации: 
+- Если число столбцов меньше числа процессов, вычисления выполняются на процессе rank = 0, а результат рассылается через MPI_Bcast;
+- При неравномерном делении столбцов первые процессы получают на один столбец больше;
+- Для распределения столбцов используется вспомогательный метод `GetLocalColumnsCounts()`.
+
+## 5. Детали реализации
+
+Структура проекта
+| Файл                   | Суть                           |
+| ---------------------- | ------------------------------ |
+| `common.hpp`           | Общее определение типов данных |
+| `ops_seq.hpp/.cpp`     | Последовательная реализация    |
+| `ops_mpi.hpp/.cpp`     | MPI-реализация                 |
+| `functional/main.cpp`  | Функциональные тесты           |
+| `performance/main.cpp` | Тесты на производительность    |
+
+### 5.1. Метод распределения столбцов
+Обеспечивается равномерное распределение нагрузки между процессами при вертикальном разделении матрицы. Кратко об алгоритме:
+- Вычисляем базовое количество столбцов (минимальное на процесс);
+- Считаем количество "лишних" столбцов, которые нужно распределить напервые процессы;
+- Вычисляем начальный столбец (индекс)
+```cpp
+static std::pair<int, int> GetLocalColumnsCounts(int cols, int rank, int size) {
+    int base_cols = cols / size;
+    int remainder = cols % size;
+    
+    int local_cols = base_cols;
+    if (rank < remainder) {
+        local_cols = local_cols + 1;
+    }
+    
+    int start_col = 0;
+    for (int i = 0; i < rank; ++i) {
+        int cols_for_i = base_cols;
+        if (i < remainder) {
+            cols_for_i = cols_for_i + 1;
+        }
+        start_col = start_col + cols_for_i;
+    }
+    
+    return {local_cols, start_col};
+}
+```
+
+### 5.2. Метод для параллельного вычисления
+Реализуется параллельное вычисление. Кратко об алгоритме:
+- Через `GetLocalColumnsCounts` получаем границы обрабатываемых столбцов;
+- Каждый процесс вычисляет частичные суммы для своей части столбца;
+- Суммируем частичные суммы всех процессов.
+ ```cpp
+static void CountMpi(int rows, int cols, int rank, int size, 
+                     std::vector<double> &result) {
+    auto [local_cols, start_col] = GetLocalColumnsCounts(cols, rank, size);
+    
+    std::vector<double> local_result(rows, 0.0);
+    
+    for (int i = 0; i < rows; ++i) {
+      double sum = 0.0;
+      for (int j = 0; j < local_cols; ++j) {
+      int global_col = start_col + j;
+      double matrix_value = (i + global_col) * 1.5;
+      double vector_value = global_col * 2.0;
+      sum += matrix_value * vector_value;
+  }
+  local_result[i] = sum;
+}
+    
+    MPI_Allreduce(local_result.data(), result.data(), 
+                  rows, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+}
+```
+
+### 5.3. Основная логика `RumImpl()`
+Интеграция логики выполнения вычислений. Кратко:
+- Получаем ранг и размер;
+- Используем необходимый алгоритм в зависимости от соотношения процессов и столбцов.
+```cpp
+bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::RunImpl() {
+    int rank = 0, size = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    
+    if (cols_ < size) {
+        if (rank == 0) {
+            CountSeq(rows_, cols_, GetOutput());
+        }
+        MPI_Bcast(GetOutput().data(), rows_, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    } else {
+        CountMpi(rows_, cols_, rank, size, GetOutput());
+    }
+    
+    MPI_Barrier(MPI_COMM_WORLD);
+    return true;
+}
+```
+
+
+## 6. Экспериментальная среда
+| Параметр   | Значение                                         |
+| ---------- | ------------------------------------------------ |
+| CPU        | Intel Core i3-6006U (2 ядра / 4 потока, 2.0 ГГц) |
+| RAM        | 8 GB                                             |
+| ОС         | Windows 10 64-bit                                |
+| Компилятор | MSVC (Visual Studio Build Tools)                 |
+| MPI        | Microsoft MPI 10.1 (mpiexec 10.1.12498.52)       |
+
+
+## 7. Результаты и обсуждение
+
+
+### 7.1 Корректность
+Функциональные тесты проверяют корректность вычислений для различных размеров матриц: 
+- Квадратные матрицы: (1×1), (2×2), (3×3), (4×4), (5×5), (10×10), (16×16), (17×17);
+- Прямоугольные матрицы: (3×5), (5×3), (15×3), (3×15), (84×11), (11×84).
+
+Ожидаемый результат результат (с учетом одновременного заполнения матрицы) вычисляется по аналитической формуле: 
+- `expected[i] = SUMMA((i + j) * 1.5 * (j * 2.0))`, 
+- с точностью проверки `ε = 10^-10`.
+
+Обе реализации (`SEQ`, `MPI`) прошли все тесты успешно.
+
+### 7.2 Производительность
+Результаты измерений на матрице размером 5000 х 5000
+
+| Mode | Count | Time, s | Speedup | Efficiency |
+| ---- | ----- | ------- | ------- | ---------- |
+| SEQ  | 1     | 0.0524  | 1       | N/A        |
+| MPI  | 2     | 0.0343  | 1.53    | 76.5%      |
+| MPI  | 4     | 0.0291  | 1.80    | 45.0%      |
+
+
+
+## 8. Заключение
+В ходе работы:
+- Реализована последовательная версия умножения матрицы на вектор с использованием аналитических вормул без явного хранения матрицы;
+- Разработана параллельная реализация с использованием вертикальной ленточной схемы распределения данных через MPI;
+- Проведено тестирование корректность для разноразмерных матриц;
+- Рассчитаны характеристики ускорения и эффективности для распараллеленого алгоритма.
+
+
+
+## 9. Источники
+1. Сысоев А. В., Лекции по курсу «Параллельное программирование для кластерных систем».
+2. Документация по курсу «Параллельное программирование», URL: https://learning-process.github.io/parallel_programming_course/ru/index.html
+3. Репозиторий курса «Параллельное программирование», URL: https://github.com/learning-process/ppc-2025-processes-engineers

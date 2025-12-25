@@ -37,7 +37,9 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ::RunImpl() {
   for (int i = 0; i < rows; ++i) {
     double sum = 0.0;
     for (int j = 0; j < cols; ++j) {
-      sum += (i + j) * 1.5 * (j * 2.0);
+      double matrix_value = (i + j) * 1.5;
+      double vector_value = j * 2.0;
+      sum += matrix_value * vector_value;
     }
     result[i] = sum;
   }

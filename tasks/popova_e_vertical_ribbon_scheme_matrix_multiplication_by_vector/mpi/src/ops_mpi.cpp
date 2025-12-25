@@ -37,7 +37,9 @@ void PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::CountSeq(int ro
   for (int i = 0; i < rows; ++i) {
     double sum = 0.0;
     for (int j = 0; j < cols; ++j) {
-      sum += (i + j) * 1.5 * (j * 2.0);
+      double matrix_value = (i + j) * 1.5;
+      double vector_value = j * 2.0;
+      sum += matrix_value * vector_value;
     }
     result[i] = sum;
   }
@@ -50,10 +52,14 @@ void PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI::CountMpi(int ro
   std::vector<double> local_result(rows, 0.0);
 
   for (int i = 0; i < rows; ++i) {
+    double sum = 0.0;
     for (int j = 0; j < local_cols; ++j) {
       int global_col = start_col + j;
-      local_result[i] += (i + global_col) * 1.5 * (global_col * 2.0);
+      double matrix_value = (i + global_col) * 1.5;
+      double vector_value = global_col * 2.0;
+      sum += matrix_value * vector_value;
     }
+    local_result[i] = sum;
   }
 
   MPI_Allreduce(local_result.data(), result.data(), rows, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
