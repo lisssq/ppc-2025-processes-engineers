@@ -18,7 +18,6 @@ class PopovaEOptimisationSEQ : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  // Вычисляет значение функции для оптимизации в точке (x, y)
   double FunctionToOptimize(double x, double y);
 };
 

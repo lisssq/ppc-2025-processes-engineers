@@ -6,12 +6,11 @@
 
 namespace popova_e_global_optimization_parallelization_by_dividing_the_search_area {
 
-// Типы функций для оптимизации
 enum class FunctionType {
-  kParabola1 = 1,  // (x-2)² + (y-3)², минимум в (2, 3), значение 0
-  kParabola2 = 2,  // x² + y², минимум в (0, 0), значение 0
-  kParabola3 = 3,  // (x-1)² + (y-1)² + 1, минимум в (1, 1), значение 1
-  kParabola4 = 4   // (x+1)² + (y+1)², минимум в (-1, -1), значение 0
+  kParabola1 = 1,  // (x-2)^2 + (y-3)^2
+  kParabola2 = 2,  // x^2 + y^2, 
+  kParabola3 = 3,  // (x-1)^2 + (y-1)^2 + 1, 
+  kParabola4 = 4   // (x+1)^2 + (y+1)^2
 };
 
 struct OptimizationInput {
@@ -20,7 +19,7 @@ struct OptimizationInput {
   double y_min;
   double y_max;
   double step;                                      // шаг сетки
-  FunctionType func_id = FunctionType::kParabola1;  // идентификатор функции для оптимизации
+  FunctionType func_id = FunctionType::kParabola1;  
 };
 
 using InType = OptimizationInput;

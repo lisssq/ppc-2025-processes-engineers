@@ -28,19 +28,18 @@ class PopovaEGlobalOptimizationRunFuncTestsProcesses : public ppc::util::BaseRun
     auto [x, y, f] = output_data;
     const auto &in = input_data_;
 
-    // Проверяем результат в зависимости от выбранной функции
     switch (in.func_id) {
       case FunctionType::kParabola1:
-        // Минимум в (2, 3), значение 0
+        // минимум в (2, 3), значение 0
         return std::abs(x - 2.0) < 1e-6 && std::abs(y - 3.0) < 1e-6 && std::abs(f) < 1e-6;
       case FunctionType::kParabola2:
-        // Минимум в (0, 0), значение 0
+        // минимум в (0, 0), значение 0
         return std::abs(x) < 1e-6 && std::abs(y) < 1e-6 && std::abs(f) < 1e-6;
       case FunctionType::kParabola3:
-        // Минимум в (1, 1), значение 1
+        // минимум в (1, 1), значение 1
         return std::abs(x - 1.0) < 1e-6 && std::abs(y - 1.0) < 1e-6 && std::abs(f - 1.0) < 1e-6;
       case FunctionType::kParabola4:
-        // Минимум в (-1, -1), значение 0
+        // минимум в (-1, -1), значение 0
         return std::abs(x + 1.0) < 1e-6 && std::abs(y + 1.0) < 1e-6 && std::abs(f) < 1e-6;
       default:
         return false;
@@ -62,19 +61,19 @@ TEST_P(PopovaEGlobalOptimizationRunFuncTestsProcesses, Test) {
 }
 
 const std::array<TestType, 8> kTestParam = {
-    // Тесты для функции 1: (x-2)² + (y-3)², минимум в (2, 3)
+    // (x-2)^2 + (y-3)^2, минимум в (2, 3)
     std::make_tuple(OptimizationInput{0.0, 4.0, 0.0, 6.0, 0.5, FunctionType::kParabola1}, "func1_step_05"),
     std::make_tuple(OptimizationInput{0.0, 4.0, 0.0, 6.0, 0.1, FunctionType::kParabola1}, "func1_step_01"),
     std::make_tuple(OptimizationInput{0.0, 4.0, 0.0, 6.0, 0.01, FunctionType::kParabola1}, "func1_step_001"),
 
-    // Тесты для функции 2: x² + y², минимум в (0, 0)
+    // x^2 + y^2, минимум в (0, 0)
     std::make_tuple(OptimizationInput{-2.0, 2.0, -2.0, 2.0, 0.1, FunctionType::kParabola2}, "func2_step_01"),
     std::make_tuple(OptimizationInput{-2.0, 2.0, -2.0, 2.0, 0.05, FunctionType::kParabola2}, "func2_step_005"),
 
-    // Тесты для функции 3: (x-1)² + (y-1)² + 1, минимум в (1, 1)
+    // (x-1)^2 + (y-1)^2 + 1, минимум в (1, 1)
     std::make_tuple(OptimizationInput{-1.0, 3.0, -1.0, 3.0, 0.1, FunctionType::kParabola3}, "func3_step_01"),
 
-    // Тесты для функции 4: (x+1)² + (y+1)², минимум в (-1, -1)
+    // (x+1)^2 + (y+1)^2, минимум в (-1, -1)
     std::make_tuple(OptimizationInput{-3.0, 1.0, -3.0, 1.0, 0.1, FunctionType::kParabola4}, "func4_step_01"),
     std::make_tuple(OptimizationInput{-3.0, 1.0, -3.0, 1.0, 0.05, FunctionType::kParabola4}, "func4_step_005")};
 
