@@ -1,6 +1,7 @@
 #include "popova_e_global_optimization_parallelization_by_dividing_the_search_area/seq/include/ops_seq.hpp"
 
 #include <limits>
+#include <tuple>
 
 #include "popova_e_global_optimization_parallelization_by_dividing_the_search_area/common/include/common.hpp"
 
@@ -27,22 +28,22 @@ double PopovaEOptimisationSEQ::FunctionToOptimize(double x, double y) {
   switch (in.func_id) {
     case FunctionType::kParabola1:
       // (x-2)^2 + (y-3)^2
-      return (x - 2.0) * (x - 2.0) + (y - 3.0) * (y - 3.0);
+      return ((x - 2.0) * (x - 2.0)) + ((y - 3.0) * (y - 3.0));
 
     case FunctionType::kParabola2:
       // x^2 + y^2
-      return x * x + y * y;
+      return (x * x) + (y * y);
 
     case FunctionType::kParabola3:
       // (x-1)^2 + (y-1)^2 + 1
-      return (x - 1.0) * (x - 1.0) + (y - 1.0) * (y - 1.0) + 1.0;
+      return (((x - 1.0) * (x - 1.0)) + ((y - 1.0) * (y - 1.0))) + 1.0;
 
     case FunctionType::kParabola4:
       // (x+1)^2 + (y+1)^2
-      return (x + 1.0) * (x + 1.0) + (y + 1.0) * (y + 1.0);
+      return ((x + 1.0) * (x + 1.0)) + ((y + 1.0) * (y + 1.0));
 
-    // default:
-    //   return (x - 2.0) * (x - 2.0) + (y - 3.0) * (y - 3.0);
+    default:
+      return ((x - 2.0) * (x - 2.0)) + ((y - 3.0) * (y - 3.0));
   }
 }
 
@@ -53,13 +54,24 @@ bool PopovaEOptimisationSEQ::RunImpl() {
   double x_best = in.x_min;
   double y_best = in.y_min;
 
-  for (double x = in.x_min; x <= in.x_max; x += in.step) {
-    for (double y = in.y_min; y <= in.y_max; y += in.step) {
-      double f = FunctionToOptimize(x, y);
+  int x_steps = static_cast<int>((in.x_max - in.x_min) / in.step) + 1;
+  int y_steps = static_cast<int>((in.y_max - in.y_min) / in.step) + 1;
+
+  for (int idx_x = 0; idx_x < x_steps; ++idx_x) {
+    double coord_x = in.x_min + idx_x * in.step;
+    if (coord_x > in.x_max) {
+      coord_x = in.x_max;
+    }
+    for (int idx_y = 0; idx_y < y_steps; ++idx_y) {
+      double coord_y = in.y_min + idx_y * in.step;
+      if (coord_y > in.y_max) {
+        coord_y = in.y_max;
+      }
+      double f = FunctionToOptimize(coord_x, coord_y);
       if (f < f_min) {
         f_min = f;
-        x_best = x;
-        y_best = y;
+        x_best = coord_x;
+        y_best = coord_y;
       }
     }
   }

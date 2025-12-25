@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <cmath>
+
 #include "popova_e_global_optimization_parallelization_by_dividing_the_search_area/common/include/common.hpp"
 #include "popova_e_global_optimization_parallelization_by_dividing_the_search_area/mpi/include/ops_mpi.hpp"
 #include "popova_e_global_optimization_parallelization_by_dividing_the_search_area/seq/include/ops_seq.hpp"
@@ -9,16 +11,21 @@ namespace popova_e_global_optimization_parallelization_by_dividing_the_search_ar
 
 class PopovaEGlobalOptimozationRunPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
  protected:
-  const double kStep_ = 0.005;  
-  const double kXMin_ = -5.0;   
-  const double kXMax_ = 10.0;
-  const double kYMin_ = -5.0;
-  const double kYMax_ = 10.0;
+  const double k_step = 0.005;
+  const double k_x_min = -5.0;
+  const double k_x_max = 10.0;
+  const double k_y_min = -5.0;
+  const double k_y_max = 10.0;
 
-  InType input_data_{};
+  InType input_data{};
 
   void SetUp() override {
-    input_data_ = InType{kXMin_, kXMax_, kYMin_, kYMax_, kStep_, FunctionType::kParabola1};
+    input_data = InType{.x_min = k_x_min,
+                        .x_max = k_x_max,
+                        .y_min = k_y_min,
+                        .y_max = k_y_max,
+                        .step = k_step,
+                        .func_id = FunctionType::kParabola1};
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
@@ -27,7 +34,7 @@ class PopovaEGlobalOptimozationRunPerfTest : public ppc::util::BaseRunPerfTests<
   }
 
   InType GetTestInputData() final {
-    return input_data_;
+    return input_data;
   }
 };
 
