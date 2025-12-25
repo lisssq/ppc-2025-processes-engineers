@@ -28,10 +28,6 @@ class PopovaEGlobalOptimizationDividingSearchAreaMPI : public BaseTask {
   void FineSearch(double x_start, double x_end, double y_start, double y_end, double step, double &best_x,
                   double &best_y, double &min_value);
 
-  void SearchRemainingArea(double x_start, double x_end, double y_start, double y_end, double skip_x_start,
-                           double skip_x_end, double skip_y_start, double skip_y_end, double middle_step,
-                           double fine_step, double &best_x, double &best_y, double &min_value);
-
   void FindGlobalMinimum(double local_x, double local_y, double local_value, double &global_x, double &global_y,
                          double &global_value);
 };
