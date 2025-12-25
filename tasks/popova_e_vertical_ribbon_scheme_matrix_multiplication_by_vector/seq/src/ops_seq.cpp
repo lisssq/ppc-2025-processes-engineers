@@ -24,12 +24,6 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ::PreProcessingIm
   rows_ = GetInput().first;
   cols_ = GetInput().second;
 
-  // matrix_.resize(cols_);
-  // for (int j = 0; j < cols_; j++) {
-  //   matrix_[j].resize(rows_, 0.0);
-  // }
-
-  // vector_.resize(cols_, 0.0);
   GetOutput().resize(rows_, 0.0);
 
   return true;
@@ -39,27 +33,6 @@ bool PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ::RunImpl() {
   int rows = rows_;
   int cols = cols_;
   auto &result = GetOutput();
-
-  // // заполняем матрицу
-  // for (int j = 0; j < cols_; j++) {
-  //   for (int i = 0; i < rows_; i++) {
-  //     matrix_[j][i] = (i + j) * 1.5;
-  //   }
-  // }
-
-  // // заполняем вектор
-  // for (int j = 0; j < cols_; j++) {
-  //   vector_[j] = j * 2.0;
-  // }
-
-  // // умножаем
-  // for (int i = 0; i < rows_; i++) {
-  //   double sum = 0.0;
-  //   for (int j = 0; j < cols_; j++) {
-  //     sum += matrix_[j][i] * vector_[j];
-  //   }
-  //   result[i] = sum;
-  // }
 
   for (int i = 0; i < rows; ++i) {
     double sum = 0.0;

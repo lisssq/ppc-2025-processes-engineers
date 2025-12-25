@@ -33,8 +33,6 @@ class PopovaEMatrixMultiplicationByVectorRunPerfTestProcesses : public ppc::util
 
   void SetUp() override {
     input_data_ = std::make_pair(5000, 5000);
-    // input_data_ = std::make_pair(2000,2000);
-    // input_data_ = std::make_pair(1500, 2000);
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
@@ -69,10 +67,6 @@ const auto kAllPerfTasks =
     ppc::util::MakeAllPerfTasks<InType, PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorMPI,
                                 PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ>(
         PPC_SETTINGS_popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector);
-
-// const auto kAllPerfTasks =
-//     ppc::util::MakeAllPerfTasks<InType, PopovaEVerticalRibbonSchemeMatrixMultiplicationByVectorSEQ>(
-//         PPC_SETTINGS_popova_e_vertical_ribbon_scheme_matrix_multiplication_by_vector);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
