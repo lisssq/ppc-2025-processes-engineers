@@ -18,7 +18,7 @@ PopovaEGlobalOptimizationDividingSearchAreaMPI::PopovaEGlobalOptimizationDividin
 
 bool PopovaEGlobalOptimizationDividingSearchAreaMPI::ValidationImpl() {
   const auto &in = GetInput();
-  return (in.x_max > in.x_min) && (in.y_max > in.y_min) && (in.step > 0);
+  return ((in.x_max > in.x_min) && (in.y_max > in.y_min) && (in.step > 0));
 }
 
 bool PopovaEGlobalOptimizationDividingSearchAreaMPI::PreProcessingImpl() {
@@ -70,14 +70,14 @@ void PopovaEGlobalOptimizationDividingSearchAreaMPI::CoarseSearch(double x_start
   int x_steps = static_cast<int>((x_end - x_start) / big_step) + 2;
   int y_steps = static_cast<int>((y_end - y_start) / big_step) + 2;
 
-  for (int idx_x = 0; idx_x < x_steps; ++idx_x) {
-    double coord_x = x_start + idx_x * big_step;
-    if (coord_x > x_end) {
+  for (int idx_x = 0; idx_x < x_steps; idx_x++) {
+    double coord_x = x_start + (idx_x * big_step);
+    if (coord_x >= x_end) {
       coord_x = x_end;
     }
-    for (int idx_y = 0; idx_y < y_steps; ++idx_y) {
-      double coord_y = y_start + idx_y * big_step;
-      if (coord_y > y_end) {
+    for (int idx_y = 0; idx_y < y_steps; idx_y++) {
+      double coord_y = y_start + (idx_y * big_step);
+      if (coord_y >= y_end) {
         coord_y = y_end;
       }
       double value = FunctionToOptimize(coord_x, coord_y);
@@ -96,14 +96,14 @@ void PopovaEGlobalOptimizationDividingSearchAreaMPI::FineSearch(double x_start, 
   int x_steps = static_cast<int>((x_end - x_start) / step) + 2;
   int y_steps = static_cast<int>((y_end - y_start) / step) + 2;
 
-  for (int idx_x = 0; idx_x < x_steps; ++idx_x) {
-    double coord_x = x_start + idx_x * step;
-    if (coord_x > x_end) {
+  for (int idx_x = 0; idx_x < x_steps; idx_x++) {
+    double coord_x = x_start + (idx_x * step);
+    if (coord_x >= x_end) {
       coord_x = x_end;
     }
-    for (int idx_y = 0; idx_y < y_steps; ++idx_y) {
-      double coord_y = y_start + idx_y * step;
-      if (coord_y > y_end) {
+    for (int idx_y = 0; idx_y < y_steps; idx_y++) {
+      double coord_y = y_start + (idx_y * step);
+      if (coord_y >= y_end) {
         coord_y = y_end;
       }
       double value = FunctionToOptimize(coord_x, coord_y);
@@ -122,11 +122,11 @@ void PopovaEGlobalOptimizationDividingSearchAreaMPI::FindGlobalMinimum(double lo
   int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  struct {
+  struct alignas(8) {
     double value{};
     int rank{};
   } local_min{};
-  struct {
+  struct alignas(8) {
     double value{};
     int rank{};
   } global_min{};
@@ -136,7 +136,11 @@ void PopovaEGlobalOptimizationDividingSearchAreaMPI::FindGlobalMinimum(double lo
 
   MPI_Allreduce(&local_min, &global_min, 1, MPI_DOUBLE_INT, MPI_MINLOC, MPI_COMM_WORLD);
 
-  std::array<double, 2> coords = {local_x, local_y};
+  std::array<double, 2> coords{};
+  if (rank == global_min.rank) {
+    coords[0] = local_x;
+    coords[1] = local_y;
+  }
   MPI_Bcast(coords.data(), 2, MPI_DOUBLE, global_min.rank, MPI_COMM_WORLD);
 
   global_x = coords[0];

@@ -49,13 +49,13 @@ bool PopovaEOptimisationSEQ::RunImpl() {
   int x_steps = static_cast<int>((in.x_max - in.x_min) / in.step) + 2;
   int y_steps = static_cast<int>((in.y_max - in.y_min) / in.step) + 2;
 
-  for (int idx_x = 0; idx_x < x_steps; ++idx_x) {
-    double coord_x = in.x_min + idx_x * in.step;
+  for (int idx_x = 0; idx_x < x_steps; idx_x++) {
+    double coord_x = in.x_min + (idx_x * in.step);
     if (coord_x > in.x_max) {
       coord_x = in.x_max;
     }
-    for (int idx_y = 0; idx_y < y_steps; ++idx_y) {
-      double coord_y = in.y_min + idx_y * in.step;
+    for (int idx_y = 0; idx_y < y_steps; idx_y++) {
+      double coord_y = in.y_min + (idx_y * in.step);
       if (coord_y > in.y_max) {
         coord_y = in.y_max;
       }

@@ -63,50 +63,20 @@ TEST_P(PopovaEGlobalOptimizationRunFuncTestsProcesses, Test) {
 
 const std::array<TestType, 8> kTestParam = {
     // (x-2)^2 + (y-3)^2, минимум в (2, 3)
-    std::make_tuple(
-        OptimizationInput{
-            .x_min = 0.0, .x_max = 4.0, .y_min = 0.0, .y_max = 6.0, .step = 0.5, .func_id = FunctionType::kParabola1},
-        "func1_step_05"),
-    std::make_tuple(
-        OptimizationInput{
-            .x_min = 0.0, .x_max = 4.0, .y_min = 0.0, .y_max = 6.0, .step = 0.1, .func_id = FunctionType::kParabola1},
-        "func1_step_01"),
-    std::make_tuple(
-        OptimizationInput{
-            .x_min = 0.0, .x_max = 4.0, .y_min = 0.0, .y_max = 6.0, .step = 0.01, .func_id = FunctionType::kParabola1},
-        "func1_step_001"),
+    std::make_tuple(OptimizationInput{0.0, 4.0, 0.0, 6.0, 0.5, FunctionType::kParabola1}, "func1_step_05"),
+    std::make_tuple(OptimizationInput{0.0, 4.0, 0.0, 6.0, 0.1, FunctionType::kParabola1}, "func1_step_01"),
+    std::make_tuple(OptimizationInput{0.0, 4.0, 0.0, 6.0, 0.01, FunctionType::kParabola1}, "func1_step_001"),
 
     // x^2 + y^2, минимум в (0, 0)
-    std::make_tuple(
-        OptimizationInput{
-            .x_min = -2.0, .x_max = 2.0, .y_min = -2.0, .y_max = 2.0, .step = 0.1, .func_id = FunctionType::kParabola2},
-        "func2_step_01"),
-    std::make_tuple(OptimizationInput{.x_min = -2.0,
-                                      .x_max = 2.0,
-                                      .y_min = -2.0,
-                                      .y_max = 2.0,
-                                      .step = 0.05,
-                                      .func_id = FunctionType::kParabola2},
-                    "func2_step_005"),
+    std::make_tuple(OptimizationInput{-2.0, 2.0, -2.0, 2.0, 0.1, FunctionType::kParabola2}, "func2_step_01"),
+    std::make_tuple(OptimizationInput{-2.0, 2.0, -2.0, 2.0, 0.05, FunctionType::kParabola2}, "func2_step_005"),
 
     // (x-1)^2 + (y-1)^2 + 1, минимум в (1, 1)
-    std::make_tuple(
-        OptimizationInput{
-            .x_min = -1.0, .x_max = 3.0, .y_min = -1.0, .y_max = 3.0, .step = 0.1, .func_id = FunctionType::kParabola3},
-        "func3_step_01"),
+    std::make_tuple(OptimizationInput{-1.0, 3.0, -1.0, 3.0, 0.1, FunctionType::kParabola3}, "func3_step_01"),
 
     // (x+1)^2 + (y+1)^2, минимум в (-1, -1)
-    std::make_tuple(
-        OptimizationInput{
-            .x_min = -3.0, .x_max = 1.0, .y_min = -3.0, .y_max = 1.0, .step = 0.1, .func_id = FunctionType::kParabola4},
-        "func4_step_01"),
-    std::make_tuple(OptimizationInput{.x_min = -3.0,
-                                      .x_max = 1.0,
-                                      .y_min = -3.0,
-                                      .y_max = 1.0,
-                                      .step = 0.05,
-                                      .func_id = FunctionType::kParabola4},
-                    "func4_step_005")};
+    std::make_tuple(OptimizationInput{-3.0, 1.0, -3.0, 1.0, 0.1, FunctionType::kParabola4}, "func4_step_01"),
+    std::make_tuple(OptimizationInput{-3.0, 1.0, -3.0, 1.0, 0.05, FunctionType::kParabola4}, "func4_step_005")};
 
 const auto kTestTasksList = std::tuple_cat(
     ppc::util::AddFuncTask<PopovaEOptimisationSEQ, InType>(

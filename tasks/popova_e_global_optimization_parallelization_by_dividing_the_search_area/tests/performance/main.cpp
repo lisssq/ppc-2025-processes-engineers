@@ -20,17 +20,12 @@ class PopovaEGlobalOptimozationRunPerfTest : public ppc::util::BaseRunPerfTests<
   InType input_data{};
 
   void SetUp() override {
-    input_data = InType{.x_min = k_x_min,
-                        .x_max = k_x_max,
-                        .y_min = k_y_min,
-                        .y_max = k_y_max,
-                        .step = k_step,
-                        .func_id = FunctionType::kParabola1};
+    input_data = InType{k_x_min, k_x_max, k_y_min, k_y_max, k_step, FunctionType::kParabola1};
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
     auto [x_min, y_min, f_min] = output_data;
-    return std::abs(x_min - 2.0) < 1e-6 && std::abs(y_min - 3.0) < 1e-6 && std::abs(f_min - 0.0) < 1e-6;
+    return ((std::abs(x_min - 2.0) < 1e-6) && (std::abs(y_min - 3.0) < 1e-6) && (std::abs(f_min - 0.0) < 1e-6));
   }
 
   InType GetTestInputData() final {
