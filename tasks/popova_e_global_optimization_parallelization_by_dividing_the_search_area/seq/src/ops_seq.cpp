@@ -1,9 +1,7 @@
 #include "popova_e_global_optimization_parallelization_by_dividing_the_search_area/seq/include/ops_seq.hpp"
 
 #include <algorithm>
-#include <cmath>
 #include <limits>
-#include <tuple>
 
 #include "popova_e_global_optimization_parallelization_by_dividing_the_search_area/common/include/common.hpp"
 
@@ -25,54 +23,44 @@ bool PopovaEOptimisationSEQ::PreProcessingImpl() {
 }
 
 double PopovaEOptimisationSEQ::FunctionToOptimize(double x, double y) {
-  const auto &in = GetInput();
-
-  switch (in.func_id) {
-    case FunctionType::kParabola1:
-      return ((x - 2.0) * (x - 2.0)) + ((y - 3.0) * (y - 3.0));
-    case FunctionType::kParabola2:
-      return (x * x) + (y * y);
-    case FunctionType::kParabola3:
-      return (((x - 1.0) * (x - 1.0)) + ((y - 1.0) * (y - 1.0))) + 1.0;
-    case FunctionType::kParabola4:
-      return ((x + 1.0) * (x + 1.0)) + ((y + 1.0) * (y + 1.0));
-    default:
-      return ((x - 2.0) * (x - 2.0)) + ((y - 3.0) * (y - 3.0));
-  }
+  return (x - 2.0) * (x - 2.0) + (y - 3.0) * (y - 3.0);
 }
 
 bool PopovaEOptimisationSEQ::RunImpl() {
   const auto &in = GetInput();
+  double f_min = std::numeric_limits<double>::max();
+  double x_best = in.x_min;
+  double y_best = in.y_min;
 
-  double best_x = in.x_min;
-  double best_y = in.y_min;
-  double min_value = std::numeric_limits<double>::max();
-
-  const double epsilon = 1e-12;
-
-  // Простой и надежный алгоритм
-  double x = in.x_min;
-  while (x <= in.x_max + epsilon) {
-    double current_x = std::min(x, in.x_max);
-
-    double y = in.y_min;
-    while (y <= in.y_max + epsilon) {
-      double current_y = std::min(y, in.y_max);
-
-      double value = FunctionToOptimize(current_x, current_y);
-      if (value < min_value) {
-        min_value = value;
-        best_x = current_x;
-        best_y = current_y;
+  for (double x = in.x_min; x <= in.x_max; x += in.step) {
+    for (double y = in.y_min; y <= in.y_max; y += in.step) {
+      double f = FunctionToOptimize(x, y);
+      if (f < f_min) {
+        f_min = f;
+        x_best = x;
+        y_best = y;
       }
-
-      y += in.step;
     }
-
-    x += in.step;
   }
 
-  GetOutput() = std::make_tuple(best_x, best_y, min_value);
+  const double refine_step = std::max(in.step / 2.0, std::numeric_limits<double>::epsilon());
+  const double x_ref_min = std::max(in.x_min, x_best - in.step);
+  const double x_ref_max = std::min(in.x_max, x_best + in.step);
+  const double y_ref_min = std::max(in.y_min, y_best - in.step);
+  const double y_ref_max = std::min(in.y_max, y_best + in.step);
+
+  for (double x = x_ref_min; x <= x_ref_max; x += refine_step) {
+    for (double y = y_ref_min; y <= y_ref_max; y += refine_step) {
+      double f = FunctionToOptimize(x, y);
+      if (f < f_min) {
+        f_min = f;
+        x_best = x;
+        y_best = y;
+      }
+    }
+  }
+
+  GetOutput() = std::make_tuple(x_best, y_best, f_min);
   return true;
 }
 
