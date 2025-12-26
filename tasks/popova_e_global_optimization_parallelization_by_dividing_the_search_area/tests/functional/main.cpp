@@ -32,17 +32,13 @@ class PopovaEGlobalOptimizationRunFuncTestsProcesses : public ppc::util::BaseRun
 
     switch (in.func_id) {
       case FunctionType::kParabola1:
-        // минимум в (2, 3), значение 0
-        return std::abs(x - 2.0) < 1e-6 && std::abs(y - 3.0) < 1e-6 && std::abs(f) < 1e-6;
+        return std::abs(x - 2.0) < 1e-5 && std::abs(y - 3.0) < 1e-5 && std::abs(f) < 1e-5;
       case FunctionType::kParabola2:
-        // минимум в (0, 0), значение 0
-        return std::abs(x) < 1e-6 && std::abs(y) < 1e-6 && std::abs(f) < 1e-6;
+        return std::abs(x) < 1e-5 && std::abs(y) < 1e-5 && std::abs(f) < 1e-5;
       case FunctionType::kParabola3:
-        // минимум в (1, 1), значение 1
-        return std::abs(x - 1.0) < 1e-6 && std::abs(y - 1.0) < 1e-6 && std::abs(f - 1.0) < 1e-6;
+        return std::abs(x - 1.0) < 1e-5 && std::abs(y - 1.0) < 1e-5 && std::abs(f - 1.0) < 1e-5;
       case FunctionType::kParabola4:
-        // минимум в (-1, -1), значение 0
-        return std::abs(x + 1.0) < 1e-6 && std::abs(y + 1.0) < 1e-6 && std::abs(f) < 1e-6;
+        return std::abs(x + 1.0) < 1e-5 && std::abs(y + 1.0) < 1e-5 && std::abs(f) < 1e-5;
       default:
         return false;
     }

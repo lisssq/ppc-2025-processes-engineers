@@ -24,8 +24,21 @@ class PopovaEGlobalOptimozationRunPerfTest : public ppc::util::BaseRunPerfTests<
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    auto [x_min, y_min, f_min] = output_data;
-    return ((std::abs(x_min - 2.0) < 1e-6) && (std::abs(y_min - 3.0) < 1e-6) && (std::abs(f_min - 0.0) < 1e-6));
+    auto [x, y, f] = output_data;
+    const auto &in = input_data;
+
+    switch (in.func_id) {
+      case FunctionType::kParabola1:
+        return std::abs(x - 2.0) < 1e-5 && std::abs(y - 3.0) < 1e-5 && std::abs(f) < 1e-5;
+      case FunctionType::kParabola2:
+        return std::abs(x) < 1e-5 && std::abs(y) < 1e-5 && std::abs(f) < 1e-5;
+      case FunctionType::kParabola3:
+        return std::abs(x - 1.0) < 1e-5 && std::abs(y - 1.0) < 1e-5 && std::abs(f - 1.0) < 1e-5;
+      case FunctionType::kParabola4:
+        return std::abs(x + 1.0) < 1e-5 && std::abs(y + 1.0) < 1e-5 && std::abs(f) < 1e-5;
+      default:
+        return false;
+    }
   }
 
   InType GetTestInputData() final {

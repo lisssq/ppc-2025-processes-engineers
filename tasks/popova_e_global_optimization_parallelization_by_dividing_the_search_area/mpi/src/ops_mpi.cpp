@@ -4,8 +4,10 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <limits>
 #include <tuple>
+#include <vector>
 
 #include "popova_e_global_optimization_parallelization_by_dividing_the_search_area/common/include/common.hpp"
 
@@ -48,69 +50,13 @@ void PopovaEGlobalOptimizationDividingSearchAreaMPI::ComputeProcessArea(int rank
   const auto &in = GetInput();
 
   double x_range = in.x_max - in.x_min;
-  double x_step = x_range / size;
+  double x_step_per_process = x_range / size;
 
-  x_start = in.x_min + (rank * x_step);
-  if (rank == size - 1) {
-    x_end = in.x_max;
-  } else {
-    x_end = in.x_min + ((rank + 1) * x_step);
-  }
+  x_start = in.x_min + rank * x_step_per_process;
+  x_end = (rank == size - 1) ? in.x_max : (in.x_min + (rank + 1) * x_step_per_process);
 
   y_start = in.y_min;
   y_end = in.y_max;
-}
-
-void PopovaEGlobalOptimizationDividingSearchAreaMPI::CoarseSearch(double x_start, double x_end, double y_start,
-                                                                  double y_end, double big_step, double &best_x,
-                                                                  double &best_y, double &min_value) {
-  min_value = std::numeric_limits<double>::max();
-  best_x = x_start;
-  best_y = y_start;
-
-  int x_steps = static_cast<int>((x_end - x_start) / big_step) + 2;
-  int y_steps = static_cast<int>((y_end - y_start) / big_step) + 2;
-
-  for (int idx_x = 0; idx_x < x_steps; ++idx_x) {
-    double coord_x = x_start + (static_cast<double>(idx_x) * big_step);
-    coord_x = std::min(coord_x, x_end);
-
-    for (int idx_y = 0; idx_y < y_steps; ++idx_y) {
-      double coord_y = y_start + (static_cast<double>(idx_y) * big_step);
-      coord_y = std::min(coord_y, y_end);
-
-      double value = FunctionToOptimize(coord_x, coord_y);
-      if (value < min_value) {
-        min_value = value;
-        best_x = coord_x;
-        best_y = coord_y;
-      }
-    }
-  }
-}
-
-void PopovaEGlobalOptimizationDividingSearchAreaMPI::FineSearch(double x_start, double x_end, double y_start,
-                                                                double y_end, double step, double &best_x,
-                                                                double &best_y, double &min_value) {
-  int x_steps = static_cast<int>((x_end - x_start) / step) + 2;
-  int y_steps = static_cast<int>((y_end - y_start) / step) + 2;
-
-  for (int idx_x = 0; idx_x < x_steps; ++idx_x) {
-    double coord_x = x_start + (static_cast<double>(idx_x) * step);
-    coord_x = std::min(coord_x, x_end);
-
-    for (int idx_y = 0; idx_y < y_steps; ++idx_y) {
-      double coord_y = y_start + (static_cast<double>(idx_y) * step);
-      coord_y = std::min(coord_y, y_end);
-
-      double value = FunctionToOptimize(coord_x, coord_y);
-      if (value < min_value) {
-        min_value = value;
-        best_x = coord_x;
-        best_y = coord_y;
-      }
-    }
-  }
 }
 
 void PopovaEGlobalOptimizationDividingSearchAreaMPI::FindGlobalMinimum(double local_x, double local_y,
@@ -121,30 +67,30 @@ void PopovaEGlobalOptimizationDividingSearchAreaMPI::FindGlobalMinimum(double lo
   int size = 0;
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  struct {
-    double value;
-    int rank;
-  } local_min{};
-  struct {
-    double value;
-    int rank;
-  } global_min{};
+  std::vector<double> all_values(size);
+  std::vector<double> all_x(size);
+  std::vector<double> all_y(size);
 
-  local_min.value = local_value;
-  local_min.rank = rank;
+  MPI_Gather(&local_value, 1, MPI_DOUBLE, all_values.data(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Gather(&local_x, 1, MPI_DOUBLE, all_x.data(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Gather(&local_y, 1, MPI_DOUBLE, all_y.data(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-  MPI_Allreduce(&local_min, &global_min, 1, MPI_DOUBLE_INT, MPI_MINLOC, MPI_COMM_WORLD);
+  if (rank == 0) {
+    int min_index = 0;
+    for (int i = 1; i < size; ++i) {
+      if (all_values[i] < all_values[min_index]) {
+        min_index = i;
+      }
+    }
 
-  std::array<double, 2> coords{};
-  if (rank == global_min.rank) {
-    coords[0] = local_x;
-    coords[1] = local_y;
+    global_x = all_x[min_index];
+    global_y = all_y[min_index];
+    global_value = all_values[min_index];
   }
-  MPI_Bcast(coords.data(), 2, MPI_DOUBLE, global_min.rank, MPI_COMM_WORLD);
 
-  global_x = coords[0];
-  global_y = coords[1];
-  global_value = global_min.value;
+  MPI_Bcast(&global_x, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&global_y, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&global_value, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
 bool PopovaEGlobalOptimizationDividingSearchAreaMPI::RunImpl() {
@@ -161,35 +107,49 @@ bool PopovaEGlobalOptimizationDividingSearchAreaMPI::RunImpl() {
   double y_end = 0.0;
   ComputeProcessArea(rank, size, x_start, x_end, y_start, y_end);
 
+  const double epsilon = 1e-12;
+  if (rank > 0) {
+    x_start -= epsilon;
+  }
+  if (rank < size - 1) {
+    x_end += epsilon;
+  }
+  if (rank > 0) {
+    y_start -= epsilon;
+  }
+  if (rank < size - 1) {
+    y_end += epsilon;
+  }
+
   double best_x = x_start;
   double best_y = y_start;
   double min_value = std::numeric_limits<double>::max();
 
-  int x_steps = static_cast<int>((x_end - x_start) / in.step) + 2;
-  int y_steps = static_cast<int>((y_end - y_start) / in.step) + 2;
+  double x = x_start;
+  while (x <= x_end + epsilon) {
+    double current_x = std::min(x, x_end);
 
-  for (int idx_x = 0; idx_x < x_steps; ++idx_x) {
-    double coord_x = x_start + (static_cast<double>(idx_x) * in.step);
-    coord_x = std::min(coord_x, x_end);
+    double y = y_start;
+    while (y <= y_end + epsilon) {
+      double current_y = std::min(y, y_end);
 
-    for (int idx_y = 0; idx_y < y_steps; ++idx_y) {
-      double coord_y = y_start + (static_cast<double>(idx_y) * in.step);
-      coord_y = std::min(coord_y, y_end);
-
-      double value = FunctionToOptimize(coord_x, coord_y);
+      double value = FunctionToOptimize(current_x, current_y);
       if (value < min_value) {
         min_value = value;
-        best_x = coord_x;
-        best_y = coord_y;
+        best_x = current_x;
+        best_y = current_y;
       }
+
+      y += in.step;
     }
+
+    x += in.step;
   }
 
   double global_x = 0.0;
   double global_y = 0.0;
   double global_value = 0.0;
-  PopovaEGlobalOptimizationDividingSearchAreaMPI::FindGlobalMinimum(best_x, best_y, min_value, global_x, global_y,
-                                                                    global_value);
+  FindGlobalMinimum(best_x, best_y, min_value, global_x, global_y, global_value);
 
   GetOutput() = std::make_tuple(global_x, global_y, global_value);
   return true;
