@@ -35,29 +35,73 @@ bool PopovaEOptimisationFieldMPI::RunImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  auto compute_range = [&](double x_min, double x_max, double &x_start, double &x_end) {
-    const double x_range = x_max - x_min;
-    x_start = x_min + rank * (x_range / size);
-    if (rank == size - 1) {
-      x_end = x_max;
-    } else {
-      x_end = x_min + (rank + 1) * (x_range / size);
-    }
-    if (x_start > x_end) {
+  auto compute_range = [&](double x_min, double x_max, double step_val, double &x_start, double &x_end) -> bool {
+    const double safe_step = std::max(step_val, std::numeric_limits<double>::epsilon());
+    const double total_x_range = x_max - x_min;
+
+    if (total_x_range < safe_step / 2.0) {
+      if (rank == 0) {
+        x_start = x_min;
+        x_end = x_max;
+        return true;
+      }
       x_start = x_min;
       x_end = x_min;
+      return false;
     }
+
+    const double approx_steps = std::floor(total_x_range / safe_step + 0.5);
+    const std::size_t total_steps = (approx_steps > 0.0) ? static_cast<std::size_t>(approx_steps) : 0U;
+    if (total_steps == 0U) {
+      x_start = x_min;
+      x_end = x_min;
+      return false;
+    }
+
+    const std::size_t base_steps = total_steps / static_cast<std::size_t>(size);
+    const std::size_t remainder = total_steps % static_cast<std::size_t>(size);
+
+    std::size_t my_steps = base_steps;
+    if (static_cast<std::size_t>(rank) < remainder) {
+      my_steps = my_steps + 1U;
+    }
+
+    std::size_t prefix_steps = static_cast<std::size_t>(rank) * base_steps;
+    if (static_cast<std::size_t>(rank) < remainder) {
+      prefix_steps = prefix_steps + static_cast<std::size_t>(rank);
+    } else {
+      prefix_steps = prefix_steps + remainder;
+    }
+
+    if (my_steps == 0U) {
+      x_start = x_min;
+      x_end = x_min;
+      return false;
+    }
+
+    x_start = x_min + static_cast<double>(prefix_steps) * safe_step;
+    x_end = x_start + static_cast<double>(my_steps) * safe_step;
+    x_end = std::min(x_end, x_max);
+    return true;
   };
 
   auto parallel_search = [&](double x_min, double x_max, double y_min, double y_max, double step, double &f_min_local,
                              double &x_best_local, double &y_best_local) {
     double x_start, x_end;
-    compute_range(x_min, x_max, x_start, x_end);
+    const double safe_step = std::max(step, std::numeric_limits<double>::epsilon());
     f_min_local = std::numeric_limits<double>::max();
-    x_best_local = x_start;
+    x_best_local = x_min;
     y_best_local = y_min;
-    for (double x = x_start; x <= x_end; x += step) {
-      for (double y = y_min; y <= y_max; y += step) {
+
+    bool has_work = compute_range(x_min, x_max, step, x_start, x_end);
+    if (!has_work) {
+      return;
+    }
+
+    const double x_limit = x_end + safe_step * 0.5;
+    const double y_limit = y_max + safe_step * 0.5;
+    for (double x = x_start; x <= x_limit; x += safe_step) {
+      for (double y = y_min; y <= y_limit; y += safe_step) {
         double f = FunctionToOptimize(x, y);
         if (f < f_min_local) {
           f_min_local = f;
@@ -114,7 +158,6 @@ bool PopovaEOptimisationFieldMPI::RunImpl() {
 
   GetOutput() = std::make_tuple(global_refined[1], global_refined[2], global_refined[0]);
 
-  MPI_Barrier(MPI_COMM_WORLD);
   return true;
 }
 
