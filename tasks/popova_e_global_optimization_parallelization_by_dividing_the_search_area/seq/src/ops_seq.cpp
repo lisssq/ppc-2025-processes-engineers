@@ -1,5 +1,6 @@
 #include "popova_e_global_optimization_parallelization_by_dividing_the_search_area/seq/include/ops_seq.hpp"
 
+#include <algorithm>
 #include <limits>
 #include <tuple>
 
@@ -42,33 +43,30 @@ double PopovaEOptimisationSEQ::FunctionToOptimize(double x, double y) {
 bool PopovaEOptimisationSEQ::RunImpl() {
   const auto &in = GetInput();
 
-  double f_min = std::numeric_limits<double>::max();
-  double x_best = in.x_min;
-  double y_best = in.y_min;
+  double best_x = in.x_min;
+  double best_y = in.y_min;
+  double min_value = std::numeric_limits<double>::max();
 
   int x_steps = static_cast<int>((in.x_max - in.x_min) / in.step) + 2;
   int y_steps = static_cast<int>((in.y_max - in.y_min) / in.step) + 2;
 
-  for (int idx_x = 0; idx_x < x_steps; idx_x++) {
-    double coord_x = in.x_min + (idx_x * in.step);
-    if (coord_x > in.x_max) {
-      coord_x = in.x_max;
-    }
-    for (int idx_y = 0; idx_y < y_steps; idx_y++) {
-      double coord_y = in.y_min + (idx_y * in.step);
-      if (coord_y > in.y_max) {
-        coord_y = in.y_max;
-      }
-      double f = FunctionToOptimize(coord_x, coord_y);
-      if (f < f_min) {
-        f_min = f;
-        x_best = coord_x;
-        y_best = coord_y;
+  for (int idx_x = 0; idx_x < x_steps; ++idx_x) {
+    double coord_x = in.x_min + (static_cast<double>(idx_x) * in.step);
+    coord_x = std::min(coord_x, in.x_max);
+
+    for (int idx_y = 0; idx_y < y_steps; ++idx_y) {
+      double coord_y = in.y_min + (static_cast<double>(idx_y) * in.step);
+      coord_y = std::min(coord_y, in.y_max);
+
+      double value = FunctionToOptimize(coord_x, coord_y);
+      if (value < min_value) {
+        min_value = value;
+        best_x = coord_x;
+        best_y = coord_y;
       }
     }
   }
-
-  GetOutput() = std::make_tuple(x_best, y_best, f_min);
+  GetOutput() = std::make_tuple(best_x, best_y, min_value);
   return true;
 }
 
