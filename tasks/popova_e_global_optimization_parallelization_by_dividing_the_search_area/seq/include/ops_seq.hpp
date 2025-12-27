@@ -18,7 +18,7 @@ class PopovaEOptimisationSEQ : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  double FunctionToOptimize(double x, double y);
+  static double FunctionToOptimize(double px, double py);
 };
 
 }  // namespace popova_e_global_optimization_parallelization_by_dividing_the_search_area

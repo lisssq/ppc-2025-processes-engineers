@@ -11,14 +11,14 @@ namespace popova_e_global_optimization_parallelization_by_dividing_the_search_ar
 
 class PopovaERunPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
  protected:
-  const double kStep_ = 0.01;
-  const double kXMax_ = 4.0;
-  const double kYMax_ = 6.0;
+  static constexpr double kStep = 0.01;
+  static constexpr double kXMax = 4.0;
+  static constexpr double kYMax = 6.0;
 
-  InType input_data_{};
+  InType input_data{};
 
   void SetUp() override {
-    input_data_ = InType{0.0, kXMax_, 0.0, kYMax_, kStep_};
+    input_data = InType{0.0, kXMax, 0.0, kYMax, kStep};
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
@@ -27,7 +27,7 @@ class PopovaERunPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
   }
 
   InType GetTestInputData() final {
-    return input_data_;
+    return input_data;
   }
 };
 
@@ -35,7 +35,7 @@ TEST_P(PopovaERunPerfTest, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, PopovaEOptimisationFieldMPI, PopovaEOptimisationSEQ>(
+const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, PopovaEGlobalOptimizationMPI, PopovaEOptimisationSEQ>(
     PPC_SETTINGS_popova_e_global_optimization_parallelization_by_dividing_the_search_area);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);

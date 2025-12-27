@@ -1,7 +1,10 @@
 #include "popova_e_global_optimization_parallelization_by_dividing_the_search_area/seq/include/ops_seq.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <cstddef>
 #include <limits>
+#include <tuple>
 
 #include "popova_e_global_optimization_parallelization_by_dividing_the_search_area/common/include/common.hpp"
 
@@ -22,23 +25,32 @@ bool PopovaEOptimisationSEQ::PreProcessingImpl() {
   return true;
 }
 
-double PopovaEOptimisationSEQ::FunctionToOptimize(double x, double y) {
-  return (x - 2.0) * (x - 2.0) + (y - 3.0) * (y - 3.0);
+double PopovaEOptimisationSEQ::FunctionToOptimize(double px, double py) {
+  return ((px - 2.0) * (px - 2.0)) + ((py - 3.0) * (py - 3.0));
 }
 
 bool PopovaEOptimisationSEQ::RunImpl() {
   const auto &in = GetInput();
+  const double safe_step = std::max(in.step, std::numeric_limits<double>::epsilon());
+
   double f_min = std::numeric_limits<double>::max();
   double x_best = in.x_min;
   double y_best = in.y_min;
 
-  for (double x = in.x_min; x <= in.x_max; x += in.step) {
-    for (double y = in.y_min; y <= in.y_max; y += in.step) {
-      double f = FunctionToOptimize(x, y);
-      if (f < f_min) {
-        f_min = f;
-        x_best = x;
-        y_best = y;
+  const auto num_x = static_cast<std::size_t>(std::floor(((in.x_max - in.x_min) / safe_step) + 0.5)) + 1U;
+  const auto num_y = static_cast<std::size_t>(std::floor(((in.y_max - in.y_min) / safe_step) + 0.5)) + 1U;
+
+  for (std::size_t ix = 0; ix < num_x; ++ix) {
+    double px = in.x_min + (static_cast<double>(ix) * safe_step);
+    px = std::min(px, in.x_max);
+    for (std::size_t iy = 0; iy < num_y; ++iy) {
+      double py = in.y_min + (static_cast<double>(iy) * safe_step);
+      py = std::min(py, in.y_max);
+      double fval = FunctionToOptimize(px, py);
+      if (fval < f_min) {
+        f_min = fval;
+        x_best = px;
+        y_best = py;
       }
     }
   }
@@ -49,13 +61,20 @@ bool PopovaEOptimisationSEQ::RunImpl() {
   const double y_ref_min = std::max(in.y_min, y_best - in.step);
   const double y_ref_max = std::min(in.y_max, y_best + in.step);
 
-  for (double x = x_ref_min; x <= x_ref_max; x += refine_step) {
-    for (double y = y_ref_min; y <= y_ref_max; y += refine_step) {
-      double f = FunctionToOptimize(x, y);
-      if (f < f_min) {
-        f_min = f;
-        x_best = x;
-        y_best = y;
+  const auto ref_num_x = static_cast<std::size_t>(std::floor(((x_ref_max - x_ref_min) / refine_step) + 0.5)) + 1U;
+  const auto ref_num_y = static_cast<std::size_t>(std::floor(((y_ref_max - y_ref_min) / refine_step) + 0.5)) + 1U;
+
+  for (std::size_t ix = 0; ix < ref_num_x; ++ix) {
+    double px = x_ref_min + (static_cast<double>(ix) * refine_step);
+    px = std::min(px, x_ref_max);
+    for (std::size_t iy = 0; iy < ref_num_y; ++iy) {
+      double py = y_ref_min + (static_cast<double>(iy) * refine_step);
+      py = std::min(py, y_ref_max);
+      double fval = FunctionToOptimize(px, py);
+      if (fval < f_min) {
+        f_min = fval;
+        x_best = px;
+        y_best = py;
       }
     }
   }

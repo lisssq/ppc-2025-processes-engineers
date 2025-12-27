@@ -3,8 +3,10 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <iomanip>
 #include <iostream>
+#include <ranges>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -39,7 +41,7 @@ class PopovaRunFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, T
     const auto &[x_min, y_min, f_min] = output_data;
     const double target_x = std::clamp(2.0, input_data_.x_min, input_data_.x_max);
     const double target_y = std::clamp(3.0, input_data_.y_min, input_data_.y_max);
-    const double f_expected = (target_x - 2.0) * (target_x - 2.0) + (target_y - 3.0) * (target_y - 3.0);
+    const double f_expected = ((target_x - 2.0) * (target_x - 2.0)) + ((target_y - 3.0) * (target_y - 3.0));
     const double tol_pos = std::max(1e-6, input_data_.step);
     const double tol_f = std::max(1e-6, input_data_.step * input_data_.step * 2.0);
 
@@ -47,14 +49,14 @@ class PopovaRunFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, T
     bool y_ok = std::abs(y_min - target_y) < tol_pos;
     bool f_ok = std::abs(f_min - f_expected) < tol_f;
 
-    std::cerr << "[DEBUG] Input: x=[" << input_data_.x_min << ", " << input_data_.x_max << "], "
-              << "y=[" << input_data_.y_min << ", " << input_data_.y_max << "], step=" << input_data_.step << "\n";
-    std::cerr << "[DEBUG] Got: x=" << x_min << ", y=" << y_min << ", f=" << f_min << "\n";
-    std::cerr << "[DEBUG] Expected: x=" << target_x << ", y=" << target_y << ", f=" << f_expected << "\n";
-    std::cerr << "[DEBUG] Tolerance: pos=" << tol_pos << ", f=" << tol_f << "\n";
-    std::cerr << "[DEBUG] Diff: dx=" << std::abs(x_min - target_x) << ", dy=" << std::abs(y_min - target_y)
-              << ", df=" << std::abs(f_min - f_expected) << "\n";
-    std::cerr << "[DEBUG] Check: x_ok=" << x_ok << ", y_ok=" << y_ok << ", f_ok=" << f_ok << "\n";
+    // std::cerr << "[DEBUG] Input: x=[" << input_data_.x_min << ", " << input_data_.x_max << "], "
+    //           << "y=[" << input_data_.y_min << ", " << input_data_.y_max << "], step=" << input_data_.step << "\n";
+    // std::cerr << "[DEBUG] Got: x=" << x_min << ", y=" << y_min << ", f=" << f_min << "\n";
+    // std::cerr << "[DEBUG] Expected: x=" << target_x << ", y=" << target_y << ", f=" << f_expected << "\n";
+    // std::cerr << "[DEBUG] Tolerance: pos=" << tol_pos << ", f=" << tol_f << "\n";
+    // std::cerr << "[DEBUG] Diff: dx=" << std::abs(x_min - target_x) << ", dy=" << std::abs(y_min - target_y)
+    //           << ", df=" << std::abs(f_min - f_expected) << "\n";
+    // std::cerr << "[DEBUG] Check: x_ok=" << x_ok << ", y_ok=" << y_ok << ", f_ok=" << f_ok << "\n";
 
     return x_ok && y_ok && f_ok;
   }
@@ -81,7 +83,7 @@ const std::array<TestType, 6> kTestParams = {std::make_tuple(InType{0.0, 4.0, 0.
                                              std::make_tuple(InType{0.0, 5.0, 0.0, 8.0, 0.33}, "fraction")};
 
 const auto kTestTasksList = std::tuple_cat(
-    ppc::util::AddFuncTask<PopovaEOptimisationFieldMPI, InType>(
+    ppc::util::AddFuncTask<PopovaEGlobalOptimizationMPI, InType>(
         kTestParams, PPC_SETTINGS_popova_e_global_optimization_parallelization_by_dividing_the_search_area),
     ppc::util::AddFuncTask<PopovaEOptimisationSEQ, InType>(
         kTestParams, PPC_SETTINGS_popova_e_global_optimization_parallelization_by_dividing_the_search_area));
