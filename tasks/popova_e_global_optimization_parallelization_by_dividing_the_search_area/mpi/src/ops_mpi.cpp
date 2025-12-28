@@ -42,18 +42,18 @@ XRange ComputeXRange(int rank, int world_size, double x_min, double x_max, doubl
 
   if (total_x_range < safe_step / 2.0) {
     if (rank == 0) {
-      return XRange{x_min, x_max, true};
+      return XRange{.start = x_min, .end = x_max, .has_work = true};
     }
-    return XRange{x_min, x_min, false};
+    return XRange{.start = x_min, .end = x_min, .has_work = false};
   }
 
   const std::size_t total_points = static_cast<std::size_t>(std::floor((total_x_range / safe_step) + 0.5)) + 1U;
   if (total_points == 0U) {
-    return XRange{x_min, x_min, false};
+    return XRange{.start = x_min, .end = x_min, .has_work = false};
   }
 
-  const std::size_t world = static_cast<std::size_t>(world_size);
-  const std::size_t r = static_cast<std::size_t>(rank);
+  const auto world = static_cast<std::size_t>(world_size);
+  const auto r = static_cast<std::size_t>(rank);
   const std::size_t base_points = total_points / world;
   const std::size_t remainder = total_points % world;
 
@@ -70,14 +70,14 @@ XRange ComputeXRange(int rank, int world_size, double x_min, double x_max, doubl
   }
 
   if (my_points == 0U) {
-    return XRange{x_min, x_min, false};
+    return XRange{.start = x_min, .end = x_min, .has_work = false};
   }
 
   const double x_start = x_min + (static_cast<double>(prefix_points) * safe_step);
   double x_end = x_min + (static_cast<double>(prefix_points + my_points - 1U) * safe_step);
   x_end = std::min(x_end, x_max);
 
-  return XRange{x_start, x_end, true};
+  return XRange{.start = x_start, .end = x_end, .has_work = true};
 }
 
 LocalBest ParallelSearch(int rank, int world_size, double x_min, double x_max, double y_min, double y_max,
@@ -86,10 +86,10 @@ LocalBest ParallelSearch(int rank, int world_size, double x_min, double x_max, d
 
   const XRange xr = ComputeXRange(rank, world_size, x_min, x_max, step);
   if (!xr.has_work) {
-    return LocalBest{std::numeric_limits<double>::max(), x_min, y_min};
+    return LocalBest{.f = std::numeric_limits<double>::max(), .x = x_min, .y = y_min};
   }
 
-  LocalBest best{std::numeric_limits<double>::max(), x_min, y_min};
+  LocalBest best{.f = std::numeric_limits<double>::max(), .x = x_min, .y = y_min};
 
   const auto num_x = static_cast<std::size_t>(std::floor(((xr.end - xr.start) / safe_step) + 1.5));
   const auto num_y = static_cast<std::size_t>(std::floor(((y_max - y_min) / safe_step) + 1.5));

@@ -4,10 +4,6 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <iomanip>
-#include <iostream>
-#include <ranges>
-#include <sstream>
 #include <string>
 #include <tuple>
 
@@ -22,13 +18,8 @@ namespace popova_e_global_optimization_parallelization_by_dividing_the_search_ar
 class PopovaRunFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
   static std::string PrintTestParam(const TestType &test_param) {
-    const auto &input = std::get<0>(test_param);
     const auto &label = std::get<1>(test_param);
-    std::ostringstream ss;
-    ss << std::fixed << std::setprecision(2) << input.step;
-    auto step_str = ss.str();
-    std::replace(step_str.begin(), step_str.end(), '.', 'p');
-    return label + "_step_" + step_str;
+    return label;
   }
 
  protected:
@@ -49,15 +40,6 @@ class PopovaRunFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, T
     bool y_ok = std::abs(y_min - target_y) < tol_pos;
     bool f_ok = std::abs(f_min - f_expected) < tol_f;
 
-    // std::cerr << "[DEBUG] Input: x=[" << input_data_.x_min << ", " << input_data_.x_max << "], "
-    //           << "y=[" << input_data_.y_min << ", " << input_data_.y_max << "], step=" << input_data_.step << "\n";
-    // std::cerr << "[DEBUG] Got: x=" << x_min << ", y=" << y_min << ", f=" << f_min << "\n";
-    // std::cerr << "[DEBUG] Expected: x=" << target_x << ", y=" << target_y << ", f=" << f_expected << "\n";
-    // std::cerr << "[DEBUG] Tolerance: pos=" << tol_pos << ", f=" << tol_f << "\n";
-    // std::cerr << "[DEBUG] Diff: dx=" << std::abs(x_min - target_x) << ", dy=" << std::abs(y_min - target_y)
-    //           << ", df=" << std::abs(f_min - f_expected) << "\n";
-    // std::cerr << "[DEBUG] Check: x_ok=" << x_ok << ", y_ok=" << y_ok << ", f_ok=" << f_ok << "\n";
-
     return x_ok && y_ok && f_ok;
   }
 
@@ -75,12 +57,12 @@ TEST_P(PopovaRunFuncTests, FindsGridMinimum) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 6> kTestParams = {std::make_tuple(InType{0.0, 4.0, 0.0, 6.0, 1.0}, "unit"),
-                                             std::make_tuple(InType{0.0, 4.0, 0.0, 6.0, 0.50}, "coarse"),
-                                             std::make_tuple(InType{-1.0, 4.0, -1.0, 7.0, 0.25}, "shifted"),
-                                             std::make_tuple(InType{-2.0, 2.0, -2.0, 2.0, 0.50}, "symmetric"),
-                                             std::make_tuple(InType{1.0, 3.0, 2.0, 4.0, 0.20}, "tight"),
-                                             std::make_tuple(InType{0.0, 5.0, 0.0, 8.0, 0.33}, "fraction")};
+const std::array<TestType, 6> kTestParams = {std::make_tuple(InType{0.0, 4.0, 0.0, 6.0, 1.0}, "test_1"),
+                                             std::make_tuple(InType{0.0, 4.0, 0.0, 6.0, 0.50}, "test_2"),
+                                             std::make_tuple(InType{-1.0, 4.0, -1.0, 7.0, 0.25}, "test_3"),
+                                             std::make_tuple(InType{-2.0, 2.0, -2.0, 2.0, 0.50}, "test_4"),
+                                             std::make_tuple(InType{1.0, 3.0, 2.0, 4.0, 0.20}, "test_5"),
+                                             std::make_tuple(InType{0.0, 5.0, 0.0, 8.0, 0.33}, "test_6")};
 
 const auto kTestTasksList = std::tuple_cat(
     ppc::util::AddFuncTask<PopovaEGlobalOptimizationMPI, InType>(
